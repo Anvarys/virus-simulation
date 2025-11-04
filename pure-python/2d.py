@@ -1,7 +1,7 @@
 from typing import List
 from random import randint
-from time import sleep
-
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 
 class Human:
     """
@@ -32,6 +32,9 @@ class Human:
         if self.infected_until >= current_time and self.infected_until != current_time + infection_duration:
             Human.infect_neighbours(x, y, current_time, infection_duration, immunity_duration)
 
+    def __int__(self):
+        return int(self.infected_until >= current_time)
+
 
 SIZE = int(input("Grid size: "))
 INFECTION_DURATION = int(input("Infection duration: "))
@@ -45,6 +48,14 @@ total_infected = 0
 
 grid[1][1].infected_until = INFECTION_DURATION + 1
 print()
+
+fig, ax = plt.subplots()
+cmap = ListedColormap(["green", "red"])
+im = ax.imshow([[0]], cmap=cmap, vmin=0, vmax=2)
+
+plt.axis('off')
+plt.ion()
+plt.show()
 
 try:
     while True:
@@ -61,6 +72,8 @@ try:
                     total_infected += 1
 
         print(f"\rCurrent time: {current_time}  |  Total infected: {total_infected}    ", end="")
-        sleep(TIME_DURATION)
+        n_grid = [[int(human) for human in column] for column in grid]
+        im.set_data(n_grid)
+        plt.pause(TIME_DURATION)
 except KeyboardInterrupt:
     exit()
