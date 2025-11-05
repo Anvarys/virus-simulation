@@ -1,7 +1,7 @@
 from typing import List
-from random import randint
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
+import numpy as np
 
 class Human:
     """
@@ -17,10 +17,10 @@ class Human:
     def infect(self, current_time, infection_duration, immunity_duration):
         if self.dead:
             return
-        if self.immune_until < current_time and self.immune_until != -1 and randint(1, self.infection_chance) == 1:
+        if self.immune_until < current_time and self.immune_until != -1 and np.random.randint(self.infection_chance) == 0:
             self.infected_until = current_time + infection_duration
             self.immune_until = current_time + infection_duration + immunity_duration
-            if self.death_chance > 0 and randint(1, self.death_chance) == 1:
+            if self.death_chance > 0 and np.random.randint(self.death_chance) == 0:
                 self.dead = True
 
     @classmethod
@@ -45,23 +45,34 @@ class Human:
 
 
 SIZE = int(input("Grid size: "))
+if SIZE < 1:
+    raise ValueError("Size < 1")
 INFECTION_DURATION = int(input("Infection duration: "))
+if INFECTION_DURATION < 0:
+    raise ValueError("Infection duration < 0")
 IMMUNITY_DURATION = int(input("Immunity duration: "))
+if IMMUNITY_DURATION < 0:
+    raise ValueError("Immunity duration < 0")
 INFECTION_CHANCE = int(input("Infection probability: 1/"))
+if INFECTION_CHANCE < 1:
+    raise ValueError("Infection chance < 1")
 _DEATH_CHANCE = input("Death probability (Press Enter to skip): 1/")
 TIME_DURATION = float(input("1 Unit of time (in seconds): "))
+if TIME_DURATION < 0:
+    raise ValueError("Time duration < 0")
 
 if len(_DEATH_CHANCE) == 0:
     DEATH_CHANCE = 0
 else:
     DEATH_CHANCE = int(_DEATH_CHANCE)
+    if DEATH_CHANCE < 0:
+        raise ValueError("Death chance < 0")
 
 grid: List[List[Human]] = [[Human(INFECTION_CHANCE, DEATH_CHANCE) for __ in range(SIZE)] for _ in range(SIZE)]
 current_time = 0
 total_infected = 0
 
-grid[randint(0,SIZE-1)][randint(0,SIZE-1)].infected_until = INFECTION_DURATION + 1
-print()
+grid[np.random.randint(SIZE)][np.random.randint(SIZE)].infected_until = INFECTION_DURATION + 1
 
 fig, ax = plt.subplots()
 cmap = ListedColormap(["green", "red", "black"])
