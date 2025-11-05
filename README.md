@@ -1,5 +1,3 @@
-![badge](https://hackatime-badge.hackclub.com/U09Q2TN62TV/virus-simulation?color=yellow&labelColor=purple&label=Time%20Spent)
-
 ### This project is about creating and visualising simulation models
 
 ---

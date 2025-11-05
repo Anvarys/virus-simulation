@@ -1,9 +1,10 @@
 import runpy
 
 options = {
-    0: {"desc":"2D simulation with matplotlib visualisation", "filename":"2d.py"},
-    1: {"desc":"3D simulation with matplotlib visualisation", "filename":"3d.py"},
-    2: {"desc":"Any dimension simulation with raw values only", "filename":"any-dimension.py"}
+    0: {"desc":"2D simulation with matplotlib 2d visualisation", "filename":"2d.py"},
+    1: {"desc":"3D simulation with matplotlib 3d visualisation", "filename":"3d.py"},
+    2: {"desc":"Any dimension simulation with raw values or graphics", "filename":"any-dimension.py"},
+    3: {"desc":"Exit"}
 }
 
 while True:
@@ -20,6 +21,9 @@ while True:
         print("\n" * 20)
         print(f"\"{choice}\" is not an option\n")
         continue
+
+    if choice == 3:
+        exit()
 
     runpy.run_path(f"python/{options[choice]["filename"]}")
 

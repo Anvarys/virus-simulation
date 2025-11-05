@@ -1,7 +1,5 @@
 import time
-from typing import List
 import numpy as np
-from numpy.f2py.auxfuncs import throw_error
 
 
 class Human:
@@ -66,6 +64,11 @@ _DEATH_CHANCE = input("Death probability (Press Enter to skip): 1/")
 TIME_DURATION = float(input("1 Unit of time (in seconds): "))
 if TIME_DURATION < 0:
     raise ValueError("Time duration < 0")
+GRAPH = input("Do you want to have graphics to be shown (statistics) [y]es or [n]o: ")
+if GRAPH == "y" or GRAPH == "yes":
+    GRAPH = True
+else:
+    GRAPH = False
 
 if len(_DEATH_CHANCE) == 0:
     DEATH_CHANCE = 0
@@ -82,12 +85,43 @@ for index, _ in np.ndenumerate(grid):
     grid[index] = Human(INFECTION_CHANCE, DEATH_CHANCE)
 
 current_time = 0
-total_infected = 0
+infected = 0
 dead = 0
 
 grid.flat[np.random.randint(SIZE**DIMENSIONS)].infected_until = INFECTION_DURATION + 1
-print(f"Total amount of people: {SIZE**DIMENSIONS}")
+total = SIZE**DIMENSIONS
+print(f"Total amount of people: {total} | Use Ctrl + C to stop the simulation")
 
+
+if GRAPH:
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots()
+    x_data = []
+
+    y_infected = []
+    y_alive = []
+    y_dead = []
+    y_alive_not_infected = []
+
+    infected_line, = ax.plot([], [], label="Infected", lw=2, color="red")
+    alive_line, = ax.plot([], [], label="Alive", lw=2, color="green")
+    dead_line, = ax.plot([], [], label="Dead", lw=2, color="black")
+    alive_not_infected_line, = ax.plot([], [], label="Alive Not Infected", lw=2, color="blue")
+
+    ax.set_xlim(0, 200)
+    ax.set_ylim(0, total)
+
+    ax.set_xlabel("Time step")
+    ax.set_ylabel("Count")
+
+    ax.legend()
+
+    plt.ion()
+    plt.show()
+
+    if TIME_DURATION <= 0:
+        TIME_DURATION = 0.000001
 
 try:
     while True:
@@ -96,14 +130,32 @@ try:
         for index, value in np.ndenumerate(grid):
             value.step(index, current_time, INFECTION_DURATION, IMMUNITY_DURATION)
 
-        total_infected = 0
+        infected = 0
         dead = 0
         for index, value in np.ndenumerate(grid):
             if value.dead:
                 dead += 1
             elif value.infected_until >= current_time:
-                total_infected += 1
+                infected += 1
         time.sleep(TIME_DURATION)
-        print(f"\rCurrent time: {current_time} | Infected: {total_infected} | Dead: {dead} | Alive: {SIZE**DIMENSIONS-dead} | Alive-not-infected: {SIZE**DIMENSIONS-total_infected-dead}              ", end="")
+        print(f"\rCurrent time: {current_time} | Infected: {infected} | Dead: {dead} | Alive: {total-dead} | Alive-not-infected: {total-infected-dead}              ", end="")
+
+        if GRAPH:
+            x_data.append(current_time)
+
+            y_infected.append(infected)
+            y_alive.append(total-dead)
+            y_dead.append(dead)
+            y_alive_not_infected.append(total-dead-infected)
+
+            infected_line.set_data(x_data, y_infected)
+            alive_line.set_data(x_data, y_alive)
+            dead_line.set_data(x_data, y_dead)
+            alive_not_infected_line.set_data(x_data, y_alive_not_infected)
+
+            ax.set_xlim(0, max(200, current_time))
+
+            plt.pause(TIME_DURATION)
+
 except KeyboardInterrupt:
-    pass
+    plt.close('all')
