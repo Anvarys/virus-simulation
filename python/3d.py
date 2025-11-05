@@ -6,6 +6,7 @@ import numpy as np
 class Human:
     """
     'infection_chance' is invert of the probability, for example if infection probability is 1% then infection_chance = 100
+    'death_chance' is invert of the probability, for example if death probability is 1% then death_chance = 100
     """
     def __init__(self, infection_chance: int = 100, death_chance: int = 100):
         self.infected_until = 0

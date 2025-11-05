@@ -1,7 +1,8 @@
+import time
 from typing import List
-import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap
 import numpy as np
+from numpy.f2py.auxfuncs import throw_error
+
 
 class Human:
     """
@@ -25,26 +26,30 @@ class Human:
                 self.dead = True
 
     @classmethod
-    def infect_neighbours(cls, x, y, current_time, infection_duration, immunity_duration):
-        if y-1 >= 0:
-            grid[y-1][x].infect(current_time, infection_duration, immunity_duration)
-        if y+1 < SIZE:
-            grid[y+1][x].infect(current_time, infection_duration, immunity_duration)
-        if x-1 >= 0:
-            grid[y][x-1].infect(current_time, infection_duration, immunity_duration)
-        if x+1 < SIZE:
-            grid[y][x+1].infect(current_time, infection_duration, immunity_duration)
+    def infect_neighbours(cls, coords, current_time, infection_duration, immunity_duration):
+        for dim in range(len(coords)):
+            l_coords = list(coords)
+            l_coords[dim] += 1
+            if l_coords[dim] < SIZE:
+                grid[tuple(l_coords)].infect(current_time, infection_duration, immunity_duration)
 
-    def step(self, x, y, current_time, infection_duration, immunity_duration):
+            l_coords[dim] -= 2
+            if l_coords[dim] >= 0:
+                grid[tuple(l_coords)].infect(current_time, infection_duration, immunity_duration)
+
+    def step(self, coords, current_time, infection_duration, immunity_duration):
         if self.dead:
             return
         if self.infected_until >= current_time and self.infected_until != current_time + infection_duration:
-            Human.infect_neighbours(x, y, current_time, infection_duration, immunity_duration)
+            Human.infect_neighbours(coords, current_time, infection_duration, immunity_duration)
 
     def __int__(self):
         return int(self.infected_until >= current_time) if not self.dead else 2
 
 
+DIMENSIONS = int(input("Dimensions (> 0): "))
+if DIMENSIONS < 1:
+    raise ValueError("Number of dimensions < 1")
 SIZE = int(input("Grid size: "))
 if SIZE < 1:
     raise ValueError("Size < 1")
@@ -69,40 +74,36 @@ else:
     if DEATH_CHANCE < 0:
         raise ValueError("Death chance < 0")
 
-grid: List[List[Human]] = [[Human(INFECTION_CHANCE, DEATH_CHANCE) for __ in range(SIZE)] for _ in range(SIZE)]
+shape = tuple([SIZE for _ in range(DIMENSIONS)])
+
+grid = np.empty(shape, dtype=object)
+
+for index, _ in np.ndenumerate(grid):
+    grid[index] = Human(INFECTION_CHANCE, DEATH_CHANCE)
+
 current_time = 0
 total_infected = 0
+dead = 0
 
-grid[np.random.randint(SIZE)][np.random.randint(SIZE)].infected_until = INFECTION_DURATION + 1
+grid.flat[np.random.randint(SIZE**DIMENSIONS)].infected_until = INFECTION_DURATION + 1
+print(f"Total amount of people: {SIZE**DIMENSIONS}")
 
-fig, ax = plt.subplots()
-cmap = ListedColormap(["green", "red", "black"])
-im = ax.imshow([[0]], cmap=cmap, vmin=0, vmax=2)
-text = fig.text(0.02, 0.9, "Current time: 0\nTotal infected: 0")
-plt.axis('off')
-plt.ion()
-plt.show()
 
 try:
     while True:
         current_time += 1
 
-        for x in range(SIZE):
-            for y in range(SIZE):
-                grid[y][x].step(x, y, current_time, INFECTION_DURATION, IMMUNITY_DURATION)
+        for index, value in np.ndenumerate(grid):
+            value.step(index, current_time, INFECTION_DURATION, IMMUNITY_DURATION)
 
         total_infected = 0
         dead = 0
-        for x in range(SIZE):
-            for y in range(SIZE):
-                if grid[y][x].dead:
-                    dead += 1
-                elif grid[y][x].infected_until >= current_time:
-                    total_infected += 1
-
-        n_grid = [[int(human) for human in column] for column in grid]
-        im.set_data(n_grid)
-        text.set_text(f"Current time: {current_time} | Infected: {total_infected} | Dead: {dead} | Alive-uninfected: {SIZE*SIZE-total_infected-dead}")
-        plt.pause(TIME_DURATION)
+        for index, value in np.ndenumerate(grid):
+            if value.dead:
+                dead += 1
+            elif value.infected_until >= current_time:
+                total_infected += 1
+        time.sleep(TIME_DURATION)
+        print(f"\rCurrent time: {current_time} | Infected: {total_infected} | Dead: {dead} | Alive: {SIZE**DIMENSIONS-dead} | Alive-not-infected: {SIZE**DIMENSIONS-total_infected-dead}", end="")
 except KeyboardInterrupt:
     exit()
