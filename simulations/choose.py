@@ -25,6 +25,6 @@ while True:
     if choice == 3:
         exit()
 
-    runpy.run_path(f"python/{options[choice]["filename"]}")
+    runpy.run_path(f"simulations/{options[choice]["filename"]}")
 
     print("\n"*20)
