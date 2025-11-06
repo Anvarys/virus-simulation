@@ -23,12 +23,15 @@ poetry run python simulations/choose.py
 
 ### TODO:
 
-1. Web version of the 2d simulation
-2. Make it not ugly
-3. Publish web version via [Cloudflare Pages](https://pages.cloudflare.com/)
-4. Web version of X dimensional simulation
-5. Graphics for X dimensional web simulation
-6. Web version of the 3d simulation (prob would crash any browser)
-7. Create other simulations (like civilisations)
+1. Make 2d & 3d python simulations & visualise them ✅
+2. Make X dimensional python simulation ✅
+3. Add Graphics for X dimensional python simulation ✅
+4. Web version of the 2d simulation
+5. Make it not ugly
+6. Publish web version via [Cloudflare Pages](https://pages.cloudflare.com/)
+7. Web version of X dimensional simulation
+8. Graphics for X dimensional web simulation
+9. Web version of the 3d simulation (prob would crash any browser)
+10. Create other simulations (like civilisations)
 
-For Axiom I'm expecting to get to 5th or 6th point in my TODO
+For Axiom I'm expecting to get to around 8th point in my TODO
