@@ -35,3 +35,14 @@ poetry run python simulations/choose.py
 10. Create other simulations (like civilisations)
 
 For Axiom I'm expecting to get to around 8th point in my TODO
+
+
+---
+
+### For Axiom reviewers
+
+<strong>AI Usage:</strong>
+- Research for possible libs / tech stack to make my project
+- Help with understanding certain libs
+- Error debugging
+
