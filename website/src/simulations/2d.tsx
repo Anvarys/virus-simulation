@@ -2,36 +2,123 @@ import React, { useEffect, useRef } from 'react';
 import type {BasicSimulationParams} from './utlis';
 
 const Simulation2D: React.FC<BasicSimulationParams> = ({gridSize, initialInfected, infectionChance, recoveryDuration, mortalityChance, immunityDuration}) => {
-
+    const [deadCount, setDeadCount] = React.useState(0);
+    const [infectedCount, setInfectedCount] = React.useState(initialInfected);
+    const [frameCount, setFrameCount] = React.useState(0);
+    
     const total = gridSize * gridSize;
-    const grid = new Int16Array(total*3);
+    const gridRef = useRef<Int16Array | undefined>(undefined);
+    const frameIdRef = useRef<number | undefined>(undefined);
+    const frameRef = useRef<number>(1);
+    const lastFrameTimeRef = useRef<number>(0);
+    const countsRef = useRef({ infected: initialInfected, dead: 0 });
+    const updateDisplayRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    
+    const FRAME_INTERVAL = 1000 / 30; // 30 fps = one frame every ~33.33ms
+    
+    // Initialize grid only once
+    if (!gridRef.current) {
+        gridRef.current = new Int16Array(total*3);
+        for (let i = 0; i < total; i++) {
+            gridRef.current[i*3] = -1; // infected until
+            gridRef.current[i*3 + 1] = -1; // immune until
+            gridRef.current[i*3 + 2] = 0; // is dead
+        }
+        for (let i = 0; i < initialInfected; i++) {
+            const id = Math.floor(Math.random() * total);
+            gridRef.current[id*3] = 1; // Start infected from frame 1
+        }
+    }
+    
+    const directions = [
+        [-1, 0], [1, 0], [0, -1], [0, 1],
+    ];
 
-    function idx(x: number, y: number) {
-        return (y * gridSize + x)*3;
+    function idx(id: number): [number, number] {
+        return [id % gridSize, Math.floor(id / gridSize)];
     }
 
-    for (let i = 0; i < total; i++) {
-        grid[i*3] = -1;
-        grid[i*3 + 1] = -1;
-        grid[i*3 + 2] = 0;
+    function get_infection_chance(x: number, y: number, frame: number) {
+        const grid = gridRef.current;
+        if (!grid) return 0;
+        
+        let infected_neighbors = 0;
+        for (const [dx, dy] of directions) {
+            const nx = x + dx;
+            const ny = y + dy;
+            if (nx >= 0 && nx < gridSize && ny >= 0 && ny < gridSize) {
+                const n_id = (ny * gridSize + nx) * 3;
+                if (grid[n_id] >= frame && grid[n_id+2] === 0 && grid[n_id] !== frame + recoveryDuration + immunityDuration) {
+                    infected_neighbors += 1;
+                }
+            }
+        }
+        return 1 - Math.pow(1 - infectionChance, infected_neighbors);
     }
 
     useEffect(() => {
-        let frameId: number;
+        const grid = gridRef.current;
+        if (!grid) return;
+        
+        // Reset counts and timing
+        countsRef.current = { infected: initialInfected, dead: 0 };
+        frameRef.current = 1;
+        lastFrameTimeRef.current = performance.now();
+        
+        setInfectedCount(initialInfected);
+        setDeadCount(0);
+
 
         const loop = () => {
 
+            let infected = 0;
+            for (let i = 0; i < total; i++) {
+                if (grid[i*3+2] === 1) continue;
+                if (grid[i*3] >= frameRef.current) {
+                    infected += 1;
+                    continue;
+                }
+                if (Math.random() < get_infection_chance(...idx(i), frameRef.current)) {
+                    if (Math.random() < mortalityChance) {
+                        grid[i*3+2] = 1;
+                        countsRef.current.dead += 1;
+                        continue;
+                    }
+                    grid[i*3] = frameRef.current + recoveryDuration;
+                    grid[i*3 + 1] = frameRef.current + recoveryDuration + immunityDuration;
+                }
+                if (grid[i*3 + 1] >= frameRef.current) {
+                    infected += 1;
+                }
+            }
+
+            countsRef.current.infected = infected;
+            
+            
+            setInfectedCount(countsRef.current.infected);
+            setDeadCount(countsRef.current.dead);
+            setFrameCount(frameRef.current);
+
+            frameRef.current += 1;
+            frameIdRef.current = requestAnimationFrame(loop);
         };
 
-        frameId = requestAnimationFrame(loop);
-        return () => cancelAnimationFrame(frameId);
-    })
+        frameIdRef.current = requestAnimationFrame(loop);
+        
+        return () => {
+            if (frameIdRef.current) cancelAnimationFrame(frameIdRef.current);
+            if (updateDisplayRef.current) clearTimeout(updateDisplayRef.current);
+        };
+    }, [gridSize, initialInfected, infectionChance, recoveryDuration, mortalityChance, immunityDuration, total]);
 
     return (
-        <div className='relative min-h-[100dvh] flex flex-col items-center justify-center bg-indigo-700 text-white text-5xl'>
-            <h1>2D Simulation WIP</h1>
+        <div className='p-4 rounded-2xl bg-white shadow-sm text-center text-black'>
+            <p>Total: {total}</p>
+            <p>Infected: {infectedCount}</p>
+            <p>Dead: {deadCount}</p>
+            <p>Frame: {frameCount}</p>
         </div>
-    )
+    );
 }
 
 export default Simulation2D;
