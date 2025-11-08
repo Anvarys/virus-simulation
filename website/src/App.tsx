@@ -5,7 +5,7 @@ import { Slider } from "@/components/ui/slider"
 import { Card } from "@/components/ui/card"
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 function App() {
   const [resetKey, setResetKey] = React.useState(0);
@@ -60,6 +60,7 @@ function App() {
         {/* Simulation Area */}
         <Card className="flex-1 aspect-square bg-neutral-800">
           <div className="w-full h-full flex items-center justify-center">
+            { simulationType === "2d" &&
             <Simulation2D 
               key={resetKey}
               gridSize={gridSize} 
@@ -69,13 +70,20 @@ function App() {
               recoveryDuration={recoveryDuration} 
               mortalityChance={mortalityChance / 100} 
             />
+            }
+            { simulationType === "3d" &&
+            <Label className='text-neutral-200'>3D Simulation WIP</Label>
+            }
+            { simulationType === "any-d" &&
+            <Label className='text-neutral-200'>Any-D Simulation WIP</Label>
+            }
           </div>
         </Card>
 
         {/* Controls Panel */}
         <Card className="w-80 p-6 space-y-6 bg-neutral-800">
           <div className="space-y-4">
-            <Select>
+            <Select onValueChange={(value) => {setSimulationType(value)}}>
               <SelectTrigger className="w-full text-white bg-violet-950">
                 <SelectValue placeholder="Select a simulation"/>
               </SelectTrigger>
