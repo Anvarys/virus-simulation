@@ -8,23 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 function App() {
-  const [resetKey, setResetKey] = React.useState(0);
-  const [gridSize, setGridSize] = React.useState(20);
-  const [initialInfected, setInitialInfected] = React.useState(1);
-  const [infectionChance, setInfectionChance] = React.useState(20);
-  const [mortalityChance, setMortalityChance] = React.useState(2);
-  const [recoveryDuration, setRecoveryDuration] = React.useState(10);
-  const [immunityDuration, setImmunityDuration] = React.useState(4);
-  const [dimensions, setDimensions] = React.useState(2);
-
-  const simulationType = React.useRef("");
-
-  const [deadCount, setDeadCount] = React.useState(0);
-  const [infectedCount, setInfectedCount] = React.useState(0);
-  const [frameCount, setFrameCount] = React.useState(0);
-
-  const initialInfectedPercentage = 0.1;
-
   const defaultSettings = {
     gridSize: 20,
     initialInfected: 4,
@@ -34,6 +17,55 @@ function App() {
     immunityDuration: 4,
     dimensions: 2,
   };
+
+  const [resetKey, setResetKey] = React.useState(0);
+  const [gridSize, setGridSize] = React.useState(() => {
+    return Number(localStorage.getItem('gridSize')) || defaultSettings.gridSize;
+  });
+  const [initialInfected, setInitialInfected] = React.useState(() => {
+    return Number(localStorage.getItem('initialInfected')) || defaultSettings.initialInfected;
+  });
+  const [infectionChance, setInfectionChance] = React.useState(() => {
+    return Number(localStorage.getItem('infectionChance')) || defaultSettings.infectionChance;
+  });
+  const [mortalityChance, setMortalityChance] = React.useState(() => {
+    return Number(localStorage.getItem('mortalityChance')) || defaultSettings.mortalityChance;
+  });
+  const [recoveryDuration, setRecoveryDuration] = React.useState(() => {
+    return Number(localStorage.getItem('recoveryDuration')) || defaultSettings.recoveryDuration;
+  });
+  const [immunityDuration, setImmunityDuration] = React.useState(() => {
+    return Number(localStorage.getItem('immunityDuration')) || defaultSettings.immunityDuration;
+  });
+  const [dimensions, setDimensions] = React.useState(() => {
+    return Number(localStorage.getItem('dimensions')) || defaultSettings.dimensions;
+  });
+
+  const simulationType = React.useRef(localStorage.getItem('simulationType') || "");
+
+  const initialInfectedPercentage = 0.1;
+
+  React.useEffect(() => {
+    localStorage.setItem('gridSize', String(gridSize));
+    localStorage.setItem('initialInfected', String(initialInfected));
+    localStorage.setItem('infectionChance', String(infectionChance));
+    localStorage.setItem('mortalityChance', String(mortalityChance));
+    localStorage.setItem('recoveryDuration', String(recoveryDuration));
+    localStorage.setItem('immunityDuration', String(immunityDuration));
+    localStorage.setItem('dimensions', String(dimensions));
+  }, [gridSize, initialInfected, infectionChance, mortalityChance, recoveryDuration, immunityDuration, dimensions]);
+
+  const [deadCount, setDeadCount] = React.useState(0);
+  const [infectedCount, setInfectedCount] = React.useState(0);
+  const [frameCount, setFrameCount] = React.useState(0);
+
+  const [isLauched, setIsLaunched] = React.useState(true);
+
+  React.useEffect(() => {
+    if (simulationType.current !== "") {
+      setIsLaunched(false);
+    }
+  }, []);
 
   const handleReset = () => {
     setResetKey(prev => prev + 1);
@@ -60,17 +92,31 @@ function App() {
 
   const handleSetSimulationType = (type: string) => {
     simulationType.current = type;
+    localStorage.setItem('simulationType', type);
     handleReset();
   }
   
+  const handleLaunch = () => {
+    setIsLaunched(true);
+  }
 
   return (
     <div className='min-h-[100dvh] flex items-center justify-center p-8 bg-neutral-900'>
       <div className='flex gap-8 w-full max-w-7xl'>
         {/* Simulation Area */}
-        <Card className="flex-1 aspect-square bg-neutral-800">
+        <Card className="flex-1 aspect-square bg-neutral-800 p-0 overflow-hidden">
           <div className="w-full h-full flex items-center justify-center">
-            { simulationType.current === "2d" &&
+            { !isLauched &&
+              <Button 
+                onClick={handleLaunch}
+              >
+                Launch Simulation
+              </Button>
+            }
+            { simulationType.current === "" && isLauched &&
+              <Label className='text-white'>Please choose a simulation to run</Label>
+            }
+            { (simulationType.current === "2d" && isLauched)  &&
             <Simulation2D 
               key={resetKey}
               gridSize={gridSize} 
@@ -84,12 +130,16 @@ function App() {
               setFrameCount={setFrameCount}
             />
             }
-            { simulationType.current === "3d" &&
+
+            { (simulationType.current === "3d" && isLauched) &&
             <Label className='text-neutral-200'>3D Simulation WIP</Label>
             }
-            { simulationType.current === "any-d" &&
+            
+            { (simulationType.current === "any-d" && isLauched) &&
             <Label className='text-neutral-200'>Any-D Simulation WIP</Label>
             }
+
+            
           </div>
         </Card>
 
@@ -97,7 +147,7 @@ function App() {
         <div className='space-y-8'>
         <Card className="w-80 p-6 space-y-6 bg-neutral-800">
           <div className="space-y-4">
-            <Select onValueChange={(value) => {handleSetSimulationType(value)}}>
+            <Select onValueChange={(value) => {handleSetSimulationType(value)}} defaultValue={simulationType.current}>
               <SelectTrigger className="w-full text-white bg-violet-950">
                 <SelectValue placeholder="Select a simulation"/>
               </SelectTrigger>

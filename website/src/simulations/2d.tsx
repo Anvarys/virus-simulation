@@ -1,5 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, type JSX } from 'react';
 import type {BasicSimulationParams} from './utlis';
+import { Canvas } from '@react-three/fiber';
+import { OrthographicCamera } from "@react-three/drei";
 
 
 const Simulation2D: React.FC<BasicSimulationParams> = ({
@@ -10,17 +12,24 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     mortalityChance, 
     immunityDuration,
     setInfectedCount,
-    setDeadCount,
+    setDeadCount, 
     setFrameCount,
     onReset
 }) => {
     const total = gridSize * gridSize;
-    const gridRef = useRef<Int16Array>(new Int16Array(total*3));
+    const cellStates = 3;
+    const gridRef = useRef<Int16Array>(new Int16Array(total*cellStates));
     const frameIdRef = useRef<number | undefined>(undefined);
     const frameRef = useRef<number>(0);
     const lastFrameTimeRef = useRef<number>(0);
     const deadCountRef = useRef(0);
     const updateDisplayRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+    const colors = [
+        "#4b75ff", // Alive not infected
+        "#00ff00", // Infected
+        "#000000", // Dead
+    ];
     
     const directions = [
         [-1, 0], [1, 0], [0, -1], [0, 1],
@@ -28,6 +37,19 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
 
     function idx(id: number): [number, number] {
         return [id % gridSize, Math.floor(id / gridSize)];
+    }
+
+    function getColor(x: number, y: number, frame: number) {
+        const grid = gridRef.current;
+        if (!grid) return colors[0];
+        const id = (y * gridSize + x) * cellStates;
+        if (grid[id+2] === 1) {
+            return colors[2];
+        } else if (grid[id] >= frame) {
+            return colors[1];
+        } else {
+            return colors[0];
+        }
     }
 
     function get_infection_chance(x: number, y: number, frame: number) {
@@ -39,7 +61,7 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
             const nx = x + dx;
             const ny = y + dy;
             if (nx >= 0 && nx < gridSize && ny >= 0 && ny < gridSize) {
-                const n_id = (ny * gridSize + nx) * 3;
+                const n_id = (ny * gridSize + nx) * cellStates;
                 if (grid[n_id] >= frame && grid[n_id+2] === 0 && grid[n_id] !== frame + recoveryDuration + immunityDuration) {
                     infected_neighbors += 1;
                 }
@@ -51,14 +73,14 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     if (frameRef.current === 0) {
 
         for (let i = 0; i < total; i++) {
-            gridRef.current[i*3] = -1; // infected until
-            gridRef.current[i*3 + 1] = -1; // immune until
-            gridRef.current[i*3 + 2] = 0; // is dead
+            gridRef.current[i*cellStates] = -1; // infected until
+            gridRef.current[i*cellStates + 1] = -1; // immune until
+            gridRef.current[i*cellStates + 2] = 0; // is dead
         }
 
         for (let i = 0; i < initialInfected; i++) {
             const id = Math.floor(Math.random() * total);
-            gridRef.current[id*3] = recoveryDuration;
+            gridRef.current[id*cellStates] = recoveryDuration;
         }
 
         deadCountRef.current = 0;
@@ -72,21 +94,21 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
         const loop = () => {
             let infected = 0;
             for (let i = 0; i < total; i++) {
-                if (grid[i*3+2] === 1) continue;
-                if (grid[i*3] >= frameRef.current) {
+                if (grid[i*cellStates+2] === 1) continue;
+                if (grid[i*cellStates] >= frameRef.current) {
                     infected += 1;
                     continue;
                 }
                 if (Math.random() < get_infection_chance(...idx(i), frameRef.current)) {
                     if (Math.random() < mortalityChance) {
-                        grid[i*3+2] = 1;
+                        grid[i*cellStates+2] = 1;
                         deadCountRef.current += 1;
                         continue;
                     }
-                    grid[i*3] = frameRef.current + recoveryDuration;
-                    grid[i*3 + 1] = frameRef.current + recoveryDuration + immunityDuration;
+                    grid[i*cellStates] = frameRef.current + recoveryDuration;
+                    grid[i*cellStates + 1] = frameRef.current + recoveryDuration + immunityDuration;
                 }
-                if (grid[i*3 + 1] >= frameRef.current) {
+                if (grid[i*cellStates + 1] >= frameRef.current) {
                     infected += 1;
                 }
             }
@@ -109,8 +131,37 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
         };
     }, [gridSize, initialInfected, infectionChance, recoveryDuration, mortalityChance, immunityDuration, total]);
 
+    const grid: JSX.Element[] = [];
+    
+    for (let x = 0; x < gridSize; x++) {
+        for (let y = 0; y < gridSize; y++){
+            grid.push(
+                <mesh key={`${x}-${y}`} position={[x-gridSize/2, y-gridSize/2, 0]}>
+                    <planeGeometry args={[1,1]}/>
+                    <meshStandardMaterial color={
+                        getColor(x, y, frameRef.current)
+                    }/>
+                </mesh>
+            )
+        }
+    }
+
+    const aspect = window.innerWidth / window.innerHeight;
+    const zoom = 20;
+
     return (
-        <></>
+        <Canvas>
+            <OrthographicCamera
+                makeDefault
+                position={[0, 0, 10]}
+                zoom={zoom}
+                near={0.1}
+                far={100}
+                args={[-aspect * zoom, aspect * zoom, zoom, -zoom, 0.1, 100]}
+            />
+            <ambientLight intensity={1} />
+            {grid}
+        </Canvas>
     );
 }
 
