@@ -5,4 +5,5 @@ export interface BasicSimulationParams {
     recoveryDuration: number;
     mortalityChance: number;
     immunityDuration: number;
+    onReset?: () => void;
 }
