@@ -17,7 +17,11 @@ function App() {
   const [immunityDuration, setImmunityDuration] = React.useState(4);
   const [dimensions, setDimensions] = React.useState(2);
 
-  const [simulationType, setSimulationType] = React.useState("");
+  const simulationType = React.useRef("");
+
+  const [deadCount, setDeadCount] = React.useState(0);
+  const [infectedCount, setInfectedCount] = React.useState(0);
+  const [frameCount, setFrameCount] = React.useState(0);
 
   const initialInfectedPercentage = 0.1;
 
@@ -47,12 +51,18 @@ function App() {
 
   const handleSetGridSize = (size: number) => {
     setGridSize(size);
-    const limit = Math.floor(Math.pow(size, dimensions) * initialInfectedPercentage);
+    const limit = Math.floor(Math.pow(gridSize, dimensions) * initialInfectedPercentage);
     if (initialInfected > limit)
     {
       setInitialInfected(limit);
     }
   }
+
+  const handleSetSimulationType = (type: string) => {
+    simulationType.current = type;
+    handleReset();
+  }
+  
 
   return (
     <div className='min-h-[100dvh] flex items-center justify-center p-8 bg-neutral-900'>
@@ -60,7 +70,7 @@ function App() {
         {/* Simulation Area */}
         <Card className="flex-1 aspect-square bg-neutral-800">
           <div className="w-full h-full flex items-center justify-center">
-            { simulationType === "2d" &&
+            { simulationType.current === "2d" &&
             <Simulation2D 
               key={resetKey}
               gridSize={gridSize} 
@@ -69,21 +79,25 @@ function App() {
               immunityDuration={immunityDuration} 
               recoveryDuration={recoveryDuration} 
               mortalityChance={mortalityChance / 100} 
+              setInfectedCount={setInfectedCount}
+              setDeadCount={setDeadCount}
+              setFrameCount={setFrameCount}
             />
             }
-            { simulationType === "3d" &&
+            { simulationType.current === "3d" &&
             <Label className='text-neutral-200'>3D Simulation WIP</Label>
             }
-            { simulationType === "any-d" &&
+            { simulationType.current === "any-d" &&
             <Label className='text-neutral-200'>Any-D Simulation WIP</Label>
             }
           </div>
         </Card>
 
         {/* Controls Panel */}
+        <div className='space-y-8'>
         <Card className="w-80 p-6 space-y-6 bg-neutral-800">
           <div className="space-y-4">
-            <Select onValueChange={(value) => {setSimulationType(value)}}>
+            <Select onValueChange={(value) => {handleSetSimulationType(value)}}>
               <SelectTrigger className="w-full text-white bg-violet-950">
                 <SelectValue placeholder="Select a simulation"/>
               </SelectTrigger>
@@ -207,6 +221,39 @@ function App() {
             
           </div>
         </Card>
+        { simulationType.current !== "" &&
+        <Card className="w-80 p-6 bg-neutral-800">
+          <div className="space-y-2">
+            <Label className="text-neutral-200 text-1xl mb-6">Current stats:</Label>
+            
+            <div className='flex items-center justify-between'>
+              <Label className="text-neutral-200">Total</Label>
+              <span className="text-sm text-violet-300">{Math.pow(gridSize, dimensions)}</span>
+            </div>
+
+            <div className='flex items-center justify-between'>
+              <Label className="text-neutral-200">Infected</Label>
+              <span className="text-sm text-violet-300">{infectedCount}</span>
+            </div>
+
+            <div className='flex items-center justify-between'>
+              <Label className="text-neutral-200">Alive & not infected</Label>
+              <span className="text-sm text-violet-300">{Math.pow(gridSize, dimensions) - infectedCount - deadCount}</span>
+            </div>
+
+            <div className='flex items-center justify-between'>
+              <Label className="text-neutral-200">Dead</Label>
+              <span className="text-sm text-violet-300">{deadCount}</span>
+            </div>
+
+            <div className='flex items-center justify-between'>
+              <Label className="text-neutral-200">Time</Label>
+              <span className="text-sm text-violet-300">{frameCount}</span>
+            </div>
+          </div>
+        </Card>
+        }
+        </div>
       </div>
     </div>
   )

@@ -5,5 +5,8 @@ export interface BasicSimulationParams {
     recoveryDuration: number;
     mortalityChance: number;
     immunityDuration: number;
+    setInfectedCount: (count: number) => void;
+    setDeadCount: (count: number) => void;
+    setFrameCount: (count: number) => void;
     onReset?: () => void;
 }

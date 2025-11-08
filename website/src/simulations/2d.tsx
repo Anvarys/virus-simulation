@@ -9,21 +9,18 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     recoveryDuration, 
     mortalityChance, 
     immunityDuration,
+    setInfectedCount,
+    setDeadCount,
+    setFrameCount,
     onReset
 }) => {
-    const [deadCount, setDeadCount] = React.useState(0);
-    const [infectedCount, setInfectedCount] = React.useState(initialInfected);
-    const [frameCount, setFrameCount] = React.useState(0);
-    
     const total = gridSize * gridSize;
-    const gridRef = useRef<Int16Array | undefined>(undefined);
+    const gridRef = useRef<Int16Array>(new Int16Array(total*3));
     const frameIdRef = useRef<number | undefined>(undefined);
-    const frameRef = useRef<number>(1);
+    const frameRef = useRef<number>(0);
     const lastFrameTimeRef = useRef<number>(0);
-    const countsRef = useRef({ infected: initialInfected, dead: 0 });
+    const deadCountRef = useRef(0);
     const updateDisplayRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-    
-    const FRAME_INTERVAL = 1000 / 30; // 30 fps = one frame every ~33.33ms
     
     const directions = [
         [-1, 0], [1, 0], [0, -1], [0, 1],
@@ -51,36 +48,28 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
         return 1 - Math.pow(1 - infectionChance, infected_neighbors);
     }
 
-    useEffect(() => {
-        gridRef.current = new Int16Array(total*3);
-        const grid = gridRef.current;
-        
+    if (frameRef.current === 0) {
+
         for (let i = 0; i < total; i++) {
-            grid[i*3] = -1; // infected until
-            grid[i*3 + 1] = -1; // immune until
-            grid[i*3 + 2] = 0; // is dead
+            gridRef.current[i*3] = -1; // infected until
+            gridRef.current[i*3 + 1] = -1; // immune until
+            gridRef.current[i*3 + 2] = 0; // is dead
         }
-        
+
         for (let i = 0; i < initialInfected; i++) {
             const id = Math.floor(Math.random() * total);
-            grid[id*3] = 1;
+            gridRef.current[id*3] = recoveryDuration;
         }
-        
-        countsRef.current = { infected: initialInfected, dead: 0 };
-        frameRef.current = 1;
-        lastFrameTimeRef.current = performance.now();
-        
-        setInfectedCount(initialInfected);
-        setDeadCount(0);
-        setFrameCount(1);
 
-        const loop = (timestamp: number) => {
-            // Check if enough time has passed since last frame
-            if (timestamp - lastFrameTimeRef.current < FRAME_INTERVAL) {
-                frameIdRef.current = requestAnimationFrame(loop);
-                return;
-            }
-            
+        deadCountRef.current = 0;
+        frameRef.current = 1;
+    }
+
+    useEffect(() => {
+        const grid = gridRef.current;
+        lastFrameTimeRef.current = performance.now();
+
+        const loop = () => {
             let infected = 0;
             for (let i = 0; i < total; i++) {
                 if (grid[i*3+2] === 1) continue;
@@ -91,7 +80,7 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
                 if (Math.random() < get_infection_chance(...idx(i), frameRef.current)) {
                     if (Math.random() < mortalityChance) {
                         grid[i*3+2] = 1;
-                        countsRef.current.dead += 1;
+                        deadCountRef.current += 1;
                         continue;
                     }
                     grid[i*3] = frameRef.current + recoveryDuration;
@@ -102,14 +91,10 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
                 }
             }
 
-            countsRef.current.infected = infected;
-            
-            
-            setInfectedCount(countsRef.current.infected);
-            setDeadCount(countsRef.current.dead);
+            setInfectedCount(infected);
+            setDeadCount(deadCountRef.current);
             setFrameCount(frameRef.current);
 
-            lastFrameTimeRef.current = timestamp;
             frameRef.current += 1;
             frameIdRef.current = requestAnimationFrame(loop);
         };
@@ -125,12 +110,7 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     }, [gridSize, initialInfected, infectionChance, recoveryDuration, mortalityChance, immunityDuration, total]);
 
     return (
-        <div className='p-4 rounded-2xl bg-white shadow-sm text-center text-black w-80'>
-            <p>Total: {total}</p>
-            <p>Infected: {infectedCount}</p>
-            <p>Dead: {deadCount}</p>
-            <p>Frame: {frameCount}</p>
-        </div>
+        <></>
     );
 }
 
