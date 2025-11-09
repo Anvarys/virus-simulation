@@ -16,9 +16,18 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     setFrameCount,
     onReset
 }) => {
-    const total = gridSize * gridSize;
+    const initialPropsRef = useRef({
+        gridSize,
+        initialInfected,
+        infectionChance,
+        recoveryDuration,
+        mortalityChance,
+        immunityDuration,
+        total: gridSize * gridSize
+    });
+
     const cellStates = 3;
-    const gridRef = useRef<Int16Array>(new Int16Array(total*cellStates));
+    const gridRef = useRef<Int16Array>(new Int16Array(initialPropsRef.current.total*cellStates));
     const frameIdRef = useRef<number | undefined>(undefined);
     const frameRef = useRef<number>(0);
     const lastFrameTimeRef = useRef<number>(0);
@@ -26,9 +35,9 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     const updateDisplayRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     const colors = [
-        "#4b75ff", // Alive not infected
+        "#001ac0", // Alive not infected
         "#00ff00", // Infected
-        "#000000", // Dead
+        "#ca0000", // Dead
     ];
     
     const directions = [
@@ -36,13 +45,14 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     ];
 
     function idx(id: number): [number, number] {
-        return [id % gridSize, Math.floor(id / gridSize)];
+        return [id % initialPropsRef.current.gridSize, Math.floor(id / initialPropsRef.current.gridSize)];
     }
 
     function getColor(x: number, y: number, frame: number) {
         const grid = gridRef.current;
+        const props = initialPropsRef.current;
         if (!grid) return colors[0];
-        const id = (y * gridSize + x) * cellStates;
+        const id = (y * props.gridSize + x) * cellStates;
         if (grid[id+2] === 1) {
             return colors[2];
         } else if (grid[id] >= frame) {
@@ -54,33 +64,35 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
 
     function get_infection_chance(x: number, y: number, frame: number) {
         const grid = gridRef.current;
+        const props = initialPropsRef.current;
         if (!grid) return 0;
         
         let infected_neighbors = 0;
         for (const [dx, dy] of directions) {
             const nx = x + dx;
             const ny = y + dy;
-            if (nx >= 0 && nx < gridSize && ny >= 0 && ny < gridSize) {
-                const n_id = (ny * gridSize + nx) * cellStates;
-                if (grid[n_id] >= frame && grid[n_id+2] === 0 && grid[n_id] !== frame + recoveryDuration + immunityDuration) {
+            if (nx >= 0 && nx < props.gridSize && ny >= 0 && ny < props.gridSize) {
+                const n_id = (ny * props.gridSize + nx) * cellStates;
+                if (grid[n_id] >= frame && grid[n_id+2] === 0 && grid[n_id] !== frame + props.recoveryDuration + props.immunityDuration) {
                     infected_neighbors += 1;
                 }
             }
         }
-        return 1 - Math.pow(1 - infectionChance, infected_neighbors);
+        return 1 - Math.pow(1 - props.infectionChance, infected_neighbors);
     }
 
     if (frameRef.current === 0) {
+        const props = initialPropsRef.current;
 
-        for (let i = 0; i < total; i++) {
+        for (let i = 0; i < props.total; i++) {
             gridRef.current[i*cellStates] = -1; // infected until
             gridRef.current[i*cellStates + 1] = -1; // immune until
             gridRef.current[i*cellStates + 2] = 0; // is dead
         }
 
-        for (let i = 0; i < initialInfected; i++) {
-            const id = Math.floor(Math.random() * total);
-            gridRef.current[id*cellStates] = recoveryDuration;
+        for (let i = 0; i < props.initialInfected; i++) {
+            const id = Math.floor(Math.random() * props.total);
+            gridRef.current[id*cellStates] = props.recoveryDuration;
         }
 
         deadCountRef.current = 0;
@@ -89,24 +101,25 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
 
     useEffect(() => {
         const grid = gridRef.current;
+        const props = initialPropsRef.current;
         lastFrameTimeRef.current = performance.now();
 
         const loop = () => {
             let infected = 0;
-            for (let i = 0; i < total; i++) {
+            for (let i = 0; i < props.total; i++) {
                 if (grid[i*cellStates+2] === 1) continue;
                 if (grid[i*cellStates] >= frameRef.current) {
                     infected += 1;
                     continue;
                 }
                 if (Math.random() < get_infection_chance(...idx(i), frameRef.current)) {
-                    if (Math.random() < mortalityChance) {
+                    if (Math.random() < props.mortalityChance) {
                         grid[i*cellStates+2] = 1;
                         deadCountRef.current += 1;
                         continue;
                     }
-                    grid[i*cellStates] = frameRef.current + recoveryDuration;
-                    grid[i*cellStates + 1] = frameRef.current + recoveryDuration + immunityDuration;
+                    grid[i*cellStates] = frameRef.current + props.recoveryDuration;
+                    grid[i*cellStates + 1] = frameRef.current + props.recoveryDuration + props.immunityDuration;
                 }
                 if (grid[i*cellStates + 1] >= frameRef.current) {
                     infected += 1;
@@ -129,14 +142,15 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
             if (frameIdRef.current) cancelAnimationFrame(frameIdRef.current);
             if (updateDisplayRef.current) clearTimeout(updateDisplayRef.current);
         };
-    }, [gridSize, initialInfected, infectionChance, recoveryDuration, mortalityChance, immunityDuration, total]);
+    }, []);
 
     const grid: JSX.Element[] = [];
     
-    for (let x = 0; x < gridSize; x++) {
-        for (let y = 0; y < gridSize; y++){
+    const props = initialPropsRef.current;
+    for (let x = 0; x < props.gridSize; x++) {
+        for (let y = 0; y < props.gridSize; y++){
             grid.push(
-                <mesh key={`${x}-${y}`} position={[x-gridSize/2, y-gridSize/2, 0]}>
+                <mesh key={`${x}-${y}`} position={[x-props.gridSize/2+0.5, y-props.gridSize/2+0.5, 0]}>
                     <planeGeometry args={[1,1]}/>
                     <meshStandardMaterial color={
                         getColor(x, y, frameRef.current)
@@ -147,7 +161,9 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     }
 
     const aspect = window.innerWidth / window.innerHeight;
-    const zoom = 20;
+
+    const baseSize = 40;
+    const zoom = (baseSize / gridSize) * 23;
 
     return (
         <Canvas>
