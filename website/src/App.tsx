@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 
 function App() {
   const defaultSettings = {
@@ -40,6 +41,13 @@ function App() {
   const [dimensions, setDimensions] = React.useState(() => {
     return Number(localStorage.getItem('dimensions')) || defaultSettings.dimensions;
   });
+  const [restartOnUpdate, setRestartOnUpdate] = React.useState(() => {
+    return Boolean(localStorage.getItem('restartOnUpdate')) || false;
+  });
+
+  const [gridSizeUnchanged, setGridSizeUnchanged] = React.useState(() => {
+    return gridSize;
+  });
 
   const simulationType = React.useRef(localStorage.getItem('simulationType') || "");
 
@@ -68,6 +76,7 @@ function App() {
   }, []);
 
   const handleReset = () => {
+    setGridSizeUnchanged(gridSize);
     setResetKey(prev => prev + 1);
   };
 
@@ -95,6 +104,13 @@ function App() {
     localStorage.setItem('simulationType', type);
     handleReset();
   }
+
+  const handleSetSettings = (setter: (value: number) => void, value: number) => {
+    setter(value);
+    if (restartOnUpdate) {
+      handleReset();
+    }
+  }
   
   const handleLaunch = () => {
     setIsLaunched(true);
@@ -119,7 +135,7 @@ function App() {
             { (simulationType.current === "2d" && isLauched)  &&
             <Simulation2D 
               key={resetKey}
-              gridSize={gridSize} 
+              gridSize={gridSize}
               initialInfected={initialInfected} 
               infectionChance={infectionChance / 100} 
               immunityDuration={immunityDuration} 
@@ -168,7 +184,7 @@ function App() {
               </div>
               <Slider
                 value={[gridSize]}
-                onValueChange={([value]) => handleSetGridSize(value)}
+                onValueChange={([value]) => handleSetSettings(handleSetGridSize,value)}
                 min={10}
                 max={50}
                 step={1}
@@ -183,7 +199,7 @@ function App() {
               </div>
               <Slider
                 value={[initialInfected]}
-                onValueChange={([value]) => setInitialInfected(value)}
+                onValueChange={([value]) => handleSetSettings(setInitialInfected,value)}
                 min={1}
                 max={Math.floor(Math.pow(gridSize, dimensions) * initialInfectedPercentage)}
                 step={1}
@@ -198,7 +214,7 @@ function App() {
               </div>
               <Slider
                 value={[infectionChance]}
-                onValueChange={([value]) => setInfectionChance(value)}
+                onValueChange={([value]) => handleSetSettings(setInfectionChance,value)}
                 min={0.2}
                 max={100}
                 step={0.2}
@@ -213,7 +229,7 @@ function App() {
               </div>
               <Slider
                 value={[mortalityChance]}
-                onValueChange={([value]) => setMortalityChance(value)}
+                onValueChange={([value]) => handleSetSettings(setMortalityChance,value)}
                 min={0}
                 max={100}
                 step={0.2}
@@ -228,7 +244,7 @@ function App() {
               </div>
               <Slider
                 value={[recoveryDuration]}
-                onValueChange={([value]) => setRecoveryDuration(value)}
+                onValueChange={([value]) => handleSetSettings(setRecoveryDuration,value)}
                 min={1}
                 max={50}
                 step={1}
@@ -243,20 +259,26 @@ function App() {
               </div>
               <Slider
                 value={[immunityDuration]}
-                onValueChange={([value]) => setImmunityDuration(value)}
+                onValueChange={([value]) => handleSetSettings(setImmunityDuration, value)}
                 min={0}
                 max={50}
                 step={1}
                 className="w-full"
               />
             </div>
+
+            <div className='flex items-center justify-between'>
+              <Checkbox onCheckedChange={(checked: boolean) => {setRestartOnUpdate(checked)}} />
+              <Label className="text-neutral-200">Restart on change</Label>
+            </div>
           </div>
 
           <div className="space-y-2 flex flex-col justify-center items-stretch">
+            
+
             <Button 
               onClick={handleResetSettings}
               className=""
-              
             >
               Reset settings
             </Button>
@@ -270,6 +292,8 @@ function App() {
             </Button>
             
           </div>
+
+        {/* Current stats */}
         </Card>
         { simulationType.current !== "" &&
         <Card className="p-6 bg-neutral-800">
@@ -278,7 +302,7 @@ function App() {
             
             <div className='flex items-center justify-between'>
               <Label className="text-neutral-200">Total</Label>
-              <span className="text-sm text-violet-300">{Math.pow(gridSize, dimensions)}</span>
+              <span className="text-sm text-violet-300">{Math.pow(gridSizeUnchanged, dimensions)}</span>
             </div>
 
             <div className='flex items-center justify-between'>
@@ -288,7 +312,7 @@ function App() {
 
             <div className='flex items-center justify-between'>
               <Label className="text-neutral-200">Alive & not infected</Label>
-              <span className="text-sm text-violet-300">{Math.pow(gridSize, dimensions) - infectedCount - deadCount}</span>
+              <span className="text-sm text-violet-300">{Math.pow(gridSizeUnchanged, dimensions) - infectedCount - deadCount}</span>
             </div>
 
             <div className='flex items-center justify-between'>
