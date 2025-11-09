@@ -8,5 +8,6 @@ export interface BasicSimulationParams {
     setInfectedCount: (count: number) => void;
     setDeadCount: (count: number) => void;
     setFrameCount: (count: number) => void;
+    resizeFunc?: () => void;
     onReset?: () => void;
 }

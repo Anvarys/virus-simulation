@@ -161,13 +161,14 @@ function App() {
               key={resetKey}
               gridSize={gridSize}
               initialInfected={initialInfected} 
-              infectionChance={infectionChance / 100} 
+              infectionChance={infectionChance / 100}
               immunityDuration={immunityDuration} 
               recoveryDuration={recoveryDuration} 
               mortalityChance={mortalityChance / 100} 
               setInfectedCount={setInfectedCount}
               setDeadCount={setDeadCount}
               setFrameCount={setFrameCount}
+              resizeFunc={handleResize}
             />
             }
 
@@ -400,17 +401,17 @@ function App() {
             </div>
 
             <div className='flex items-center justify-between'>
-              <Label className="text-neutral-200">Infected</Label>
+              <Label className="text-[var(--infected)]">Infected</Label>
               <span className="text-sm text-violet-300">{infectedCount}</span>
             </div>
 
             <div className='flex items-center justify-between'>
-              <Label className="text-neutral-200 pr-2">Alive & not infected</Label>
+              <Label className="text-[var(--healthy)] pr-2">Alive & not infected</Label>
               <span className="text-sm text-violet-300">{Math.pow(gridSizeUnchanged, dimensions) - infectedCount - deadCount}</span>
             </div>
 
             <div className='flex items-center justify-between'>
-              <Label className="text-neutral-200">Dead</Label>
+              <Label className="text-[var(--dead)]">Dead</Label>
               <span className="text-sm text-violet-300">{deadCount}</span>
             </div>
 

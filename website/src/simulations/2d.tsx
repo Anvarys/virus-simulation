@@ -14,7 +14,8 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     setInfectedCount,
     setDeadCount, 
     setFrameCount,
-    onReset
+    resizeFunc,
+    onReset,
 }) => {
     const initialPropsRef = useRef({
         gridSize,
@@ -34,7 +35,7 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     const deadCountRef = useRef(0);
     const updateDisplayRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-    const colorHealthy = getComputedStyle(document.documentElement).getPropertyValue("--healty").trim()
+    const colorHealthy = getComputedStyle(document.documentElement).getPropertyValue("--healthy").trim()
     const colorInfected = getComputedStyle(document.documentElement).getPropertyValue("--infected").trim()
     const colorDead = getComputedStyle(document.documentElement).getPropertyValue("--dead").trim()
     
@@ -171,6 +172,7 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     const handleResize = () => {
         const containerSize = Math.min(window.innerHeight * 0.6, window.innerHeight * 0.8);
         setZoom(containerSize / gridSize * 1.6);
+        resizeFunc?.();
     };
 
     window.onresize = handleResize;
