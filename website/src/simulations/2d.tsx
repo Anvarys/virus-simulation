@@ -160,10 +160,22 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
         }
     }
 
-    const aspect = window.innerWidth / window.innerHeight;
+    const [zoom, setZoom] = React.useState(() => {
+        const containerSize = Math.min(window.innerWidth * 0.6, window.innerHeight * 0.8);
+        return containerSize / gridSize;
+    });
 
-    const baseSize = 40;
-    const zoom = (baseSize / gridSize) * 23;
+    React.useEffect(() => {
+        const handleResize = () => {
+            const containerSize = Math.min(window.innerWidth * 0.6, window.innerHeight * 0.8);
+            setZoom(containerSize / gridSize);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [gridSize]);
+
+    const aspect = window.innerWidth / window.innerHeight;
 
     return (
         <Canvas>

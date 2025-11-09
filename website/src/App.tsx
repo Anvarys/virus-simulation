@@ -101,11 +101,11 @@ function App() {
   }
 
   return (
-    <div className='min-h-[100dvh] flex items-center justify-center p-8 bg-neutral-900'>
-      <div className='flex gap-8 w-full max-w-7xl'>
+    <div className='min-h-[100dvh] min-w-full flex items-center p-8 bg-neutral-900'>
+      <div className='flex gap-8 w-full max-w-[calc(100dvh-4rem)] h-[calc(100dvh-4rem)]'>
         {/* Simulation Area */}
-        <Card className="flex-1 aspect-square bg-neutral-800 p-0 overflow-hidden">
-          <div className="w-full h-full flex items-center justify-center">
+        <Card className="flex-1 aspect-square bg-neutral-800 p-0 overflow-hidden max-h-full min-w-[calc(100dvh-4rem)] max-w-[calc(100dvh-4rem)]">
+          <div className="w-full h-full flex items-center justify-center aspect-square">
             { !isLauched &&
               <Button 
                 onClick={handleLaunch}
@@ -145,7 +145,7 @@ function App() {
 
         {/* Controls Panel */}
         <div className='space-y-8'>
-        <Card className="w-80 p-6 space-y-6 bg-neutral-800">
+        <Card className="p-6 space-y-6 bg-neutral-800">
           <div className="space-y-4">
             <Select onValueChange={(value) => {handleSetSimulationType(value)}} defaultValue={simulationType.current}>
               <SelectTrigger className="w-full text-white bg-violet-950">
@@ -252,18 +252,18 @@ function App() {
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-2 flex flex-col justify-center items-stretch">
             <Button 
               onClick={handleResetSettings}
-              className="w-full"
+              className=""
               
             >
               Reset settings
             </Button>
-            
+            <br/>
             <Button 
               onClick={handleReset}
-              className="w-full"
+              className=""
               variant="secondary"
             >
               Restart simulation
@@ -272,7 +272,7 @@ function App() {
           </div>
         </Card>
         { simulationType.current !== "" &&
-        <Card className="w-80 p-6 bg-neutral-800">
+        <Card className="p-6 bg-neutral-800">
           <div className="space-y-2">
             <Label className="text-neutral-200 text-1xl mb-6">Current stats:</Label>
             
