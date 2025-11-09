@@ -26,9 +26,9 @@ poetry run python simulations/choose.py
 1. Make 2d & 3d python simulations & visualise them ✅
 2. Make X dimensional python simulation ✅
 3. Add Graphics for X dimensional python simulation ✅
-4. Web version of the 2d simulation
-5. Make it not ugly
-6. Publish web version via [Cloudflare Pages](https://pages.cloudflare.com/)
+4. Web version of the 2d simulation ✅
+5. Make it not ugly ✅
+6. Publish web version via [Cloudflare Pages](https://pages.cloudflare.com/) ✅
 7. Web version of X dimensional simulation
 8. Graphics for X dimensional web simulation
 9. Web version of the 3d simulation (prob would crash any browser)
