@@ -101,10 +101,10 @@ function App() {
   }
 
   return (
-    <div className='min-h-[100dvh] min-w-full flex items-center p-8 bg-neutral-900'>
-      <div className='flex gap-8 w-full max-w-[calc(100dvh-4rem)] h-[calc(100dvh-4rem)]'>
+    <div className='min-h-[100dvh] min-w-full flex items-center p-[2dvh] bg-neutral-900'>
+      <div className='flex gap-8 w-full max-w-[96dvh] h-[96dvh]'>
         {/* Simulation Area */}
-        <Card className="flex-1 aspect-square bg-neutral-800 p-0 overflow-hidden max-h-full min-w-[calc(100dvh-4rem)] max-w-[calc(100dvh-4rem)]">
+        <Card className="flex-1 aspect-square bg-neutral-800 p-0 overflow-hidden max-h-full min-w-[96dvh] max-w-[96dvh]">
           <div className="w-full h-full flex items-center justify-center aspect-square">
             { !isLauched &&
               <Button 
@@ -144,7 +144,7 @@ function App() {
         </Card>
 
         {/* Controls Panel */}
-        <div className='space-y-8'>
+        <div className='space-y-8 flex flex-col'>
         <Card className="p-6 space-y-6 bg-neutral-800">
           <div className="space-y-4">
             <Select onValueChange={(value) => {handleSetSimulationType(value)}} defaultValue={simulationType.current}>

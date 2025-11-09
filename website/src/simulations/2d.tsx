@@ -34,11 +34,9 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     const deadCountRef = useRef(0);
     const updateDisplayRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-    const colors = [
-        "#001ac0", // Alive not infected
-        "#00ff00", // Infected
-        "#ca0000", // Dead
-    ];
+    const colorHealthy = getComputedStyle(document.documentElement).getPropertyValue("--healty").trim()
+    const colorInfected = getComputedStyle(document.documentElement).getPropertyValue("--infected").trim()
+    const colorDead = getComputedStyle(document.documentElement).getPropertyValue("--dead").trim()
     
     const directions = [
         [-1, 0], [1, 0], [0, -1], [0, 1],
@@ -51,14 +49,14 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     function getColor(x: number, y: number, frame: number) {
         const grid = gridRef.current;
         const props = initialPropsRef.current;
-        if (!grid) return colors[0];
+        if (!grid) return colorHealthy;
         const id = (y * props.gridSize + x) * cellStates;
         if (grid[id+2] === 1) {
-            return colors[2];
+            return colorDead;
         } else if (grid[id] >= frame) {
-            return colors[1];
+            return colorInfected;
         } else {
-            return colors[0];
+            return colorHealthy;
         }
     }
 
@@ -100,6 +98,8 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     }
 
     useEffect(() => {
+        console.log(colorHealthy, colorInfected, colorDead);
+
         const grid = gridRef.current;
         const props = initialPropsRef.current;
         lastFrameTimeRef.current = performance.now();
@@ -161,25 +161,24 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     }
 
     const [zoom, setZoom] = React.useState(() => {
-        const containerSize = Math.min(window.innerWidth * 0.6, window.innerHeight * 0.8);
-        return containerSize / gridSize;
+        const containerSize = Math.min(window.innerHeight * 0.6, window.innerHeight * 0.8);
+        return containerSize / gridSize * 1.6;
     });
 
-    React.useEffect(() => {
-        const handleResize = () => {
-            const containerSize = Math.min(window.innerWidth * 0.6, window.innerHeight * 0.8);
-            setZoom(containerSize / gridSize);
-        };
 
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, [gridSize]);
+    const handleResize = () => {
+        const containerSize = Math.min(window.innerHeight * 0.6, window.innerHeight * 0.8);
+        setZoom(containerSize / gridSize * 1.6);
+    };
 
-    const aspect = window.innerWidth / window.innerHeight;
+    window.onresize = handleResize;
+
+    const aspect = 1;
 
     return (
         <Canvas>
             <OrthographicCamera
+                key={zoom}
                 makeDefault
                 position={[0, 0, 10]}
                 zoom={zoom}
