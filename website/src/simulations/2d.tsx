@@ -112,7 +112,7 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
                     infected += 1;
                     continue;
                 }
-                if (Math.random() < get_infection_chance(...idx(i), frameRef.current)) {
+                if (grid[i*cellStates+1] < frameRef.current && Math.random() < get_infection_chance(...idx(i), frameRef.current)) {
                     if (Math.random() < props.mortalityChance) {
                         grid[i*cellStates+2] = 1;
                         deadCountRef.current += 1;
@@ -131,11 +131,13 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
             setFrameCount(frameRef.current);
 
             frameRef.current += 1;
-            frameIdRef.current = requestAnimationFrame(loop);
+            if (infected !== 0) {
+                frameIdRef.current = requestAnimationFrame(loop);
+            }
         };
 
         frameIdRef.current = requestAnimationFrame(loop);
-        
+
         onReset?.();
         
         return () => {

@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import InfoIcon from '@/components/icons/InfoIcon';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 function App() {
   const defaultSettings = {
@@ -178,7 +180,17 @@ function App() {
 
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
-                <Label className="text-neutral-200">Grid size</Label>
+                <Label className="text-neutral-200">
+                  Grid size
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon color="white" width='1rem' height='1rem'/>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Length of the grid's side</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </Label>
                 
                 <span className="text-sm text-violet-300">{gridSize}</span>
               </div>
@@ -194,7 +206,17 @@ function App() {
 
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
-                <Label className="text-neutral-200">Initial infected</Label>
+                <Label className="text-neutral-200">
+                  Initial infected
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon color="white" width='1rem' height='1rem'/>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className='text-center'>Amount of randomly placed<br/>infected humans</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </Label>
                 <span className="text-sm text-violet-300">{initialInfected}</span>
               </div>
               <Slider
@@ -209,7 +231,17 @@ function App() {
 
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
-                <Label className="text-neutral-200">Infection chance</Label>
+                <Label className="text-neutral-200 min-w-[9rem]">
+                  Infection chance
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon color="white" width='1rem' height='1rem'/>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className='text-center'>Chance that a human will<br/>infect his neighbors each<br/>unit of time</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </Label>
                 <span className="text-sm text-violet-300">{infectionChance}%</span>
               </div>
               <Slider
@@ -224,7 +256,17 @@ function App() {
 
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
-                <Label className="text-neutral-200">Mortality chance</Label>
+                <Label className="text-neutral-200">
+                  Mortality chance
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon color="white" width='1rem' height='1rem'/>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className='text-center'>Chance that a human will<br/>die after getting infected</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </Label>
                 <span className="text-sm text-violet-300">{mortalityChance}%</span>
               </div>
               <Slider
@@ -239,7 +281,17 @@ function App() {
 
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
-                <Label className="text-neutral-200">Recovery duration</Label>
+                <Label className="text-neutral-200">
+                  Recovery duration
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon color="white" width='1rem' height='1rem'/>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className='text-center'>Amount of units of time<br/>after which human will<br/>become healthy after<br/>getting infected</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </Label>
                 <span className="text-sm text-violet-300">{recoveryDuration}</span>
               </div>
               <Slider
@@ -254,7 +306,17 @@ function App() {
 
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
-                <Label className="text-neutral-200">Immunity duration</Label>
+                <Label className="text-neutral-200">
+                  Immunity duration
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon color="white" width='1rem' height='1rem'/>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className='text-center'>Amount of units of time<br/>that human will be immune for<br/>after healing from an infection</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </Label>
                 <span className="text-sm text-violet-300">{immunityDuration}</span>
               </div>
               <Slider
@@ -269,7 +331,17 @@ function App() {
 
             <div className='flex items-center justify-between'>
               <Checkbox onCheckedChange={(checked: boolean) => {setRestartOnUpdate(checked)}} />
-              <Label className="text-neutral-200">Restart on change</Label>
+              <Label className="text-neutral-200">
+                Restart on change
+                <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon color="white" width='1rem' height='1rem'/>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className='text-center'>Restart the simulation after<br/>any change in parameters</p>
+                    </TooltipContent>
+                  </Tooltip>
+              </Label>
             </div>
           </div>
 
