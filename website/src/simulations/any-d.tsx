@@ -1,10 +1,8 @@
-import React, { useEffect, useRef, type JSX } from 'react';
-import type {BasicSimulationParams} from './utlis';
-import { Canvas } from '@react-three/fiber';
-import { OrthographicCamera } from "@react-three/drei";
+import React, { useEffect, useRef } from 'react';
+import type {AnyDimensionalSimulationParams} from './utlis';
 
 
-const Simulation2D: React.FC<BasicSimulationParams> = ({
+const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
     gridSize, 
     initialInfected, 
     infectionChance, 
@@ -16,6 +14,7 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     setFrameCount,
     resizeFunc,
     onReset,
+    dimensions,
 }) => {
     const initialPropsRef = useRef({
         gridSize,
@@ -24,55 +23,35 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
         recoveryDuration,
         mortalityChance,
         immunityDuration,
-        total: gridSize * gridSize
+        total: Math.pow(gridSize, dimensions),
+        dimensions
     });
 
     const cellStates = 3;
     const gridRef = useRef<Int16Array>(new Int16Array(initialPropsRef.current.total*cellStates));
     const frameIdRef = useRef<number | undefined>(undefined);
     const frameRef = useRef<number>(0);
-    const lastFrameTimeRef = useRef<number>(0);
+
     const deadCountRef = useRef(0);
     const updateDisplayRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    /*
+    const colorHealthy = getComputedStyle(document.documentElement).getPropertyValue("--healthy").trim();
+    const colorInfected = getComputedStyle(document.documentElement).getPropertyValue("--infected").trim();
+    const colorDead = getComputedStyle(document.documentElement).getPropertyValue("--dead").trim();
+    */
 
-    const colorHealthy = getComputedStyle(document.documentElement).getPropertyValue("--healthy").trim()
-    const colorInfected = getComputedStyle(document.documentElement).getPropertyValue("--infected").trim()
-    const colorDead = getComputedStyle(document.documentElement).getPropertyValue("--dead").trim()
-    
-    const directions = [
-        [-1, 0], [1, 0], [0, -1], [0, 1],
-    ];
-
-    function idx(id: number): [number, number] {
-        return [id % initialPropsRef.current.gridSize, Math.floor(id / initialPropsRef.current.gridSize)];
-    }
-
-    function getColor(x: number, y: number, frame: number) {
-        const grid = gridRef.current;
-        const props = initialPropsRef.current;
-        if (!grid) return colorHealthy;
-        const id = (y * props.gridSize + x) * cellStates;
-        if (grid[id+2] === 1) {
-            return colorDead;
-        } else if (grid[id] >= frame) {
-            return colorInfected;
-        } else {
-            return colorHealthy;
-        }
-    }
-
-    function get_infection_chance(x: number, y: number, frame: number) {
+    function get_infection_chance(id: number, frame: number) {
         const grid = gridRef.current;
         const props = initialPropsRef.current;
         if (!grid) return 0;
         
         let infected_neighbors = 0;
-        for (const [dx, dy] of directions) {
-            const nx = x + dx;
-            const ny = y + dy;
-            if (nx >= 0 && nx < props.gridSize && ny >= 0 && ny < props.gridSize) {
-                const n_id = (ny * props.gridSize + nx) * cellStates;
-                if (grid[n_id] >= frame && grid[n_id+2] === 0 && grid[n_id] !== frame + props.recoveryDuration + props.immunityDuration) {
+        for (let dim = 0; dim < dimensions; dim++) {
+            for (let dir of [-1, 1]) {
+                const n_id = id + dir * Math.pow(props.gridSize, dim);
+                if (n_id < 0 || n_id >= props.total) continue;
+
+                if (grid[n_id*cellStates] >= frame) {
                     infected_neighbors += 1;
                 }
             }
@@ -101,7 +80,6 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     useEffect(() => {
         const grid = gridRef.current;
         const props = initialPropsRef.current;
-        lastFrameTimeRef.current = performance.now();
 
         const loop = () => {
             let infected = 0;
@@ -111,7 +89,7 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
                     infected += 1;
                     continue;
                 }
-                if (grid[i*cellStates+1] < frameRef.current && Math.random() < get_infection_chance(...idx(i), frameRef.current)) {
+                if (grid[i*cellStates+1] < frameRef.current && Math.random() < get_infection_chance(i, frameRef.current)) {
                     if (Math.random() < props.mortalityChance) {
                         grid[i*cellStates+2] = 1;
                         deadCountRef.current += 1;
@@ -145,53 +123,16 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
         };
     }, []);
 
-    const grid: JSX.Element[] = [];
-    
-    const props = initialPropsRef.current;
-    for (let x = 0; x < props.gridSize; x++) {
-        for (let y = 0; y < props.gridSize; y++){
-            grid.push(
-                <mesh key={`${x}-${y}`} position={[x-props.gridSize/2+0.5, y-props.gridSize/2+0.5, 0]}>
-                    <planeGeometry args={[1,1]}/>
-                    <meshStandardMaterial color={
-                        getColor(x, y, frameRef.current)
-                    }/>
-                </mesh>
-            )
-        }
-    }
-
-    const [zoom, setZoom] = React.useState(() => {
-        const containerSize = Math.min(window.innerHeight * 0.6, window.innerHeight * 0.8);
-        return containerSize / gridSize * 1.6;
-    });
-
-
     const handleResize = () => {
-        const containerSize = Math.min(window.innerHeight * 0.6, window.innerHeight * 0.8);
-        setZoom(containerSize / gridSize * 1.6);
         resizeFunc?.();
     };
 
     window.onresize = handleResize;
 
-    const aspect = 1;
-
     return (
-        <Canvas>
-            <OrthographicCamera
-                key={zoom}
-                makeDefault
-                position={[0, 0, 10]}
-                zoom={zoom}
-                near={0.1}
-                far={100}
-                args={[-aspect * zoom, aspect * zoom, zoom, -zoom, 0.1, 100]}
-            />
-            <ambientLight intensity={1} />
-            {grid}
-        </Canvas>
+        <>
+        </>
     );
 }
 
-export default Simulation2D;
+export default SimulationAnyD;

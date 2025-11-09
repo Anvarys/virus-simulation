@@ -11,3 +11,7 @@ export interface BasicSimulationParams {
     resizeFunc?: () => void;
     onReset?: () => void;
 }
+
+export interface AnyDimensionalSimulationParams extends BasicSimulationParams {
+    dimensions: number;
+}

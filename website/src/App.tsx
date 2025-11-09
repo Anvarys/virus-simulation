@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Checkbox } from '@/components/ui/checkbox';
 import InfoIcon from '@/components/icons/InfoIcon';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import SimulationAnyD from '@/simulations/any-d';
 
 function App() {
   const defaultSettings = {
@@ -50,6 +51,9 @@ function App() {
   const [gridSizeUnchanged, setGridSizeUnchanged] = React.useState(() => {
     return gridSize;
   });
+  const [dimensionsUnchanged, setDimensionsUnchanged] = React.useState(() => {
+    return dimensions;
+  });
 
   const statsRef = React.useRef<HTMLDivElement | null>(null);
   const [statsIsRow, setStatsIsRow] = React.useState(false);
@@ -57,6 +61,8 @@ function App() {
   const simulationType = React.useRef(localStorage.getItem('simulationType') || "");
 
   const initialInfectedPercentage = 0.1;
+
+  const totalLimitLog = Math.log(100000);
 
   React.useEffect(() => {
     localStorage.setItem('gridSize', String(gridSize));
@@ -82,6 +88,7 @@ function App() {
 
   const handleReset = () => {
     setGridSizeUnchanged(gridSize);
+    setDimensionsUnchanged(dimensions);
     setResetKey(prev => prev + 1);
   };
 
@@ -97,10 +104,15 @@ function App() {
 
   const handleSetGridSize = (size: number) => {
     setGridSize(size);
-    const limit = Math.floor(Math.pow(gridSize, dimensions) * initialInfectedPercentage);
-    if (initialInfected > limit)
+    const initialInfectedlimit = Math.floor(Math.pow(gridSize, dimensions) * initialInfectedPercentage)+1;
+    if (initialInfected > initialInfectedlimit)
     {
-      setInitialInfected(limit);
+      setInitialInfected(initialInfectedlimit);
+    }
+
+    const dimensionsLimit = Math.floor(totalLimitLog / Math.log(size));
+    if (dimensions > dimensionsLimit) {
+      setDimensions(dimensionsLimit);
     }
   }
 
@@ -177,7 +189,20 @@ function App() {
             }
             
             { (simulationType.current === "any-d" && isLauched) &&
-            <Label className='text-neutral-200'>Any-D Simulation WIP</Label>
+            <SimulationAnyD 
+              key={resetKey}
+              gridSize={gridSize}
+              initialInfected={initialInfected} 
+              infectionChance={infectionChance / 100}
+              immunityDuration={immunityDuration} 
+              recoveryDuration={recoveryDuration} 
+              mortalityChance={mortalityChance / 100} 
+              setInfectedCount={setInfectedCount}
+              setDeadCount={setDeadCount}
+              setFrameCount={setFrameCount}
+              resizeFunc={handleResize}
+              dimensions={dimensions}
+            />
             }
 
             
@@ -201,6 +226,34 @@ function App() {
               </SelectContent>
             </Select>
 
+            { simulationType.current === "any-d" &&
+              <div className="space-y-2">
+                <div className='flex items-center justify-between'>
+                  <Label className="text-neutral-200">
+                    Dimensions
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <InfoIcon color="white" width='1rem' height='1rem'/>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Amount of dimensions in the grid</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </Label>
+                  
+                  <span className="text-sm text-violet-300">{dimensions}</span>
+                </div>
+                <Slider
+                  value={[dimensions]}
+                  onValueChange={([value]) => handleSetSettings(setDimensions,value)}
+                  min={1}
+                  max={Math.floor(totalLimitLog / Math.log(gridSize))}
+                  step={1}
+                  className="w-full"
+                />
+              </div>
+            }
+
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
                 <Label className="text-neutral-200">
@@ -220,7 +273,7 @@ function App() {
               <Slider
                 value={[gridSize]}
                 onValueChange={([value]) => handleSetSettings(handleSetGridSize,value)}
-                min={10}
+                min={2}
                 max={50}
                 step={1}
                 className="w-full"
@@ -246,7 +299,7 @@ function App() {
                 value={[initialInfected]}
                 onValueChange={([value]) => handleSetSettings(setInitialInfected,value)}
                 min={1}
-                max={Math.floor(Math.pow(gridSize, dimensions) * initialInfectedPercentage)}
+                max={Math.floor(Math.pow(gridSize, dimensions) * initialInfectedPercentage)+1}
                 step={1}
                 className="w-full"
               />
@@ -279,8 +332,8 @@ function App() {
 
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
-                <Label className="text-neutral-200">
-                  Mortality chance
+                <div className='flex flex-row items-left'>
+                  <Label className="text-neutral-200 pr-2 min-w-[7.4rem]">Mortality chance</Label>
                   <Tooltip>
                     <TooltipTrigger>
                       <InfoIcon color="white" width='1rem' height='1rem'/>
@@ -289,8 +342,8 @@ function App() {
                       <p className='text-center'>Chance that a human will<br/>die after getting infected</p>
                     </TooltipContent>
                   </Tooltip>
-                </Label>
-                <span className="text-sm text-violet-300">{mortalityChance}%</span>
+                </div>
+                <span className="text-sm text-violet-300 text-right min-w-[2.5rem]">{mortalityChance}%</span>
               </div>
               <Slider
                 value={[mortalityChance]}
@@ -397,7 +450,7 @@ function App() {
             
             <div className='flex items-center justify-between'>
               <Label className="text-neutral-200">Total</Label>
-              <span className="text-sm text-violet-300">{Math.pow(gridSizeUnchanged, dimensions)}</span>
+              <span className="text-sm text-violet-300">{Math.pow(gridSizeUnchanged, dimensionsUnchanged)}</span>
             </div>
 
             <div className='flex items-center justify-between'>
@@ -407,7 +460,7 @@ function App() {
 
             <div className='flex items-center justify-between'>
               <Label className="text-[var(--healthy)] pr-2">Alive & not infected</Label>
-              <span className="text-sm text-violet-300">{Math.pow(gridSizeUnchanged, dimensions) - infectedCount - deadCount}</span>
+              <span className="text-sm text-violet-300">{Math.pow(gridSizeUnchanged, dimensionsUnchanged) - infectedCount - deadCount}</span>
             </div>
 
             <div className='flex items-center justify-between'>
