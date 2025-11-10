@@ -10,6 +10,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import InfoIcon from '@/components/icons/InfoIcon';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import SimulationAnyD from '@/simulations/any-d';
+import { faGithub } from '@fortawesome/free-brands-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 function App() {
   const defaultSettings = {
@@ -471,6 +473,14 @@ function App() {
             <div className='flex items-center justify-between'>
               <Label className="text-neutral-200">Time</Label>
               <span className="text-sm text-violet-300">{frameCount}</span>
+            </div>
+            <div className='mt-3'>
+              <a href='https://github.com/Anvarys/virus-simulation' target='_blank'>
+                <div className='mt-3 bg-neutral-700 p-1 rounded-[0.5rem] border-neutral-200 border flex flex-row'>
+                  <FontAwesomeIcon icon={faGithub} color='white' size='xl' className='mr-2'/>
+                  <Label className='text-neutral-200 text-center'>GitHub</Label>
+                </div>
+              </a>
             </div>
           </div>
         </Card>
