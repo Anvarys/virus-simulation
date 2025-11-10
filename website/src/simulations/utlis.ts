@@ -15,3 +15,10 @@ export interface BasicSimulationParams {
 export interface AnyDimensionalSimulationParams extends BasicSimulationParams {
     dimensions: number;
 }
+
+export interface ChartDataElement {
+    time: number,
+    dead: number,
+    infected: number,
+    healthy: number
+}

@@ -461,7 +461,7 @@ function App() {
             </div>
 
             <div className='flex items-center justify-between'>
-              <Label className="text-[var(--healthy)] pr-2">Alive & not infected</Label>
+              <Label className="text-[var(--healthy)] pr-2">Healthy</Label>
               <span className="text-sm text-violet-300">{Math.pow(gridSizeUnchanged, dimensionsUnchanged) - infectedCount - deadCount}</span>
             </div>
 
