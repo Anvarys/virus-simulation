@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import type { AnyDimensionalSimulationParams, ChartDataElement} from './utlis';
 import { type ChartConfig, ChartContainer } from "@/components/ui/chart" 
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
-import { Label } from '@/components/ui/label';
 
 
 const chartConfig = {
