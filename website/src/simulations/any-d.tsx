@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import type { AnyDimensionalSimulationParams, ChartDataElement} from './utlis';
 import { type ChartConfig, ChartContainer } from "@/components/ui/chart" 
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
+import { Label } from '@/components/ui/label';
 
 
 const chartConfig = {
@@ -46,7 +47,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
   });
 
   const cellStates = 3;
-  const maxChartData = 10000;
+  const maxChartData = 500;
 
   const gridRef = useRef<Int16Array>(new Int16Array(initialPropsRef.current.total*cellStates));
   const frameIdRef = useRef<number | undefined>(undefined);
@@ -75,10 +76,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
     return 1 - Math.pow(1 - props.infectionChance, infected_neighbors);
   }
 
-  function addChatData(chartDataElement: ChartDataElement) {
-    if (chartData.current.length > maxChartData){
-      chartData.current.shift();
-    }
+  function addChartData(chartDataElement: ChartDataElement) {
     chartData.current.push(chartDataElement);
   }
 
@@ -104,12 +102,14 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
     const grid = gridRef.current;
     const props = initialPropsRef.current;
 
-    addChatData({
-      time: frameRef.current,
-      dead: deadCountRef.current,
-      infected: props.initialInfected,
-      healthy: props.total - props.initialInfected
-    })
+    if (chartData.current.length < 1){
+      addChartData({
+        time: 1,
+        dead: deadCountRef.current,
+        infected: props.initialInfected,
+        healthy: props.total - props.initialInfected
+      })
+    }
 
     const loop = () => {
       let infected = 0;
@@ -137,7 +137,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
       setDeadCount(deadCountRef.current);
       setFrameCount(frameRef.current);
 
-      addChatData({
+      addChartData({
         time: frameRef.current,
         dead: deadCountRef.current,
         infected: infected,
@@ -167,8 +167,8 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
   window.onresize = handleResize;
 
   return (
-    <div className='w-full h-full p-8 pl-0'>
-      <ChartContainer config={chartConfig}>
+    <div className='w-full h-full p-8 flex flex-col space-y-8'>
+      <ChartContainer className='p-2 h-[50%]' config={chartConfig}>
         <LineChart
         key={frameRef.current}
         accessibilityLayer
@@ -180,7 +180,52 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
             dataKey="time"
             tickLine={false}
             tickMargin={0}
-            interval={50}
+            startOffset={1}
+            interval={Math.max(Math.floor(frameRef.current/15/50)*50-1, 99)}
+          />
+          <YAxis
+            tickLine={false}
+          />
+          <Line 
+            dataKey="dead"
+            type="monotone"
+            stroke='var(--dead)'
+            strokeWidth={2}
+            dot={false}
+            isAnimationActive={false}
+          />
+          <Line
+            dataKey="infected"
+            type="monotone"
+            stroke='var(--infected)'
+            strokeWidth={2}
+            dot={false}
+            isAnimationActive={false}
+          />
+          <Line
+            dataKey="healthy"
+            type="monotone"
+            stroke='var(--healthy)'
+            strokeWidth={2}
+            dot={false}
+            isAnimationActive={false}
+          />
+        </LineChart>
+      </ChartContainer>
+      <ChartContainer className='p-2 h-[calc(50%-2rem)]' config={chartConfig}>
+        <LineChart
+        key={frameRef.current}
+        accessibilityLayer
+        data={chartData.current.slice(-maxChartData)}
+        margin={{}}
+        >
+          <CartesianGrid vertical={false}/>
+          <XAxis
+            dataKey="time"
+            tickLine={false}
+            tickMargin={0}
+            startOffset={1}
+            interval={Math.max(Math.floor(frameRef.current/15/50)*50-1, 99)}
           />
           <YAxis
             tickLine={false}

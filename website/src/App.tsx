@@ -155,10 +155,10 @@ function App() {
   }, []);
 
   return (
-    <div className='min-h-[100dvh] min-w-full flex items-center p-[2dvh] bg-neutral-900'>
-      <div className='flex gap-8 w-full max-w-[96dvw] h-[96dvh]'>
+    <div className='min-h-[100dvh] min-w-full flex items-center p-[2dvh] bg-neutral-950'>
+      <div className='flex gap-8 w-full max-w-[96dvw] h-[96dvh] text-neutral-100'>
         {/* Simulation Area */}
-        <Card className="flex-1 aspect-square bg-neutral-800 p-0 overflow-hidden max-h-full min-w-[96dvh] max-w-[96dvh]">
+        <Card className="flex-1 aspect-square bg-neutral-900 p-0 overflow-hidden max-h-full min-w-[96dvh] max-w-[96dvh] border-neutral-800">
           <div className="w-full h-full flex items-center justify-center aspect-square">
             { !isLauched &&
               <Button 
@@ -168,7 +168,7 @@ function App() {
               </Button>
             }
             { simulationType.current === "" && isLauched &&
-              <Label className='text-white'>Please choose a simulation to run</Label>
+              <Label>Please choose a simulation to run</Label>
             }
             { (simulationType.current === "2d" && isLauched)  &&
             <Simulation2D 
@@ -187,7 +187,7 @@ function App() {
             }
 
             { (simulationType.current === "3d" && isLauched) &&
-            <Label className='text-neutral-200'>3D Simulation WIP</Label>
+            <Label>3D Simulation WIP</Label>
             }
             
             { (simulationType.current === "any-d" && isLauched) &&
@@ -213,14 +213,14 @@ function App() {
 
         {/* Controls Panel */}
         <div className={`flex grow flex-${statsIsRow ? 'row space-x-8' : 'col space-y-8'}`}>
-        <Card className="p-6 space-y-6 bg-neutral-800 grow flex flex-col justify-between h-min">
+        <Card className="p-6 space-y-6 bg-neutral-900 grow flex flex-col justify-between h-min border-neutral-800">
           <div className="space-y-4">
             <Select onValueChange={(value) => {handleSetSimulationType(value)}} defaultValue={simulationType.current}>
-              <SelectTrigger className="w-full text-white bg-violet-950">
+              <SelectTrigger className="w-full bg-violet-950 border-violet-900">
                 <SelectValue placeholder="Select a simulation"/>
               </SelectTrigger>
-              <SelectContent className='bg-violet-950'>
-                <SelectGroup className="bg-violet-950 text-white">
+              <SelectContent className='bg-violet-950 border-violet-900'>
+                <SelectGroup className="bg-violet-950 border-violet-900 text-neutral-100">
                   <SelectItem value="2d">2D Simulation</SelectItem>
                   <SelectItem value="3d">3D Simulation</SelectItem>
                   <SelectItem value="any-d">Any-D Simulation</SelectItem>
@@ -231,7 +231,7 @@ function App() {
             { simulationType.current === "any-d" &&
               <div className="space-y-2">
                 <div className='flex items-center justify-between'>
-                  <Label className="text-neutral-200">
+                  <Label>
                     Dimensions
                     <Tooltip>
                       <TooltipTrigger>
@@ -258,7 +258,7 @@ function App() {
 
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
-                <Label className="text-neutral-200">
+                <Label>
                   Grid size
                   <Tooltip>
                     <TooltipTrigger>
@@ -284,7 +284,7 @@ function App() {
 
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
-                <Label className="text-neutral-200">
+                <Label>
                   Initial infected
                   <Tooltip>
                     <TooltipTrigger>
@@ -309,7 +309,7 @@ function App() {
 
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
-                <Label className="text-neutral-200 min-w-[9rem]">
+                <Label className="min-w-[9rem]">
                   Infection chance
                   <Tooltip>
                     <TooltipTrigger>
@@ -335,7 +335,7 @@ function App() {
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
                 <div className='flex flex-row items-left'>
-                  <Label className="text-neutral-200 pr-2 min-w-[7.4rem]">Mortality chance</Label>
+                  <Label className="pr-2 min-w-[7.4rem]">Mortality chance</Label>
                   <Tooltip>
                     <TooltipTrigger>
                       <InfoIcon color="white" width='1rem' height='1rem'/>
@@ -359,7 +359,7 @@ function App() {
 
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
-                <Label className="text-neutral-200">
+                <Label>
                   Recovery duration
                   <Tooltip>
                     <TooltipTrigger>
@@ -384,7 +384,7 @@ function App() {
 
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
-                <Label className="text-neutral-200">
+                <Label>
                   Immunity duration
                   <Tooltip>
                     <TooltipTrigger>
@@ -409,7 +409,7 @@ function App() {
 
             <div className='flex items-center justify-between'>
               <Checkbox onCheckedChange={(checked: boolean) => {setRestartOnUpdate(checked)}} />
-              <Label className="text-neutral-200">
+              <Label>
                 Restart on change
                 <Tooltip>
                     <TooltipTrigger>
@@ -428,15 +428,14 @@ function App() {
 
             <Button 
               onClick={handleResetSettings}
-              className=""
+              className="bg-violet-800 border-violet-700 border hover:bg-violet-700 border-violet-600"
             >
               Reset settings
             </Button>
             <br/>
             <Button 
               onClick={handleReset}
-              className=""
-              variant="secondary"
+              className="bg-cyan-800 border-cyan-700 border hover:bg-cyan-700 hover:border-cyan-600"
             >
               Restart simulation
             </Button>
@@ -446,12 +445,12 @@ function App() {
         {/* Current stats */}
         </Card>
         { simulationType.current !== "" &&
-        <Card className="p-6 bg-neutral-800 grow h-min" ref={statsRef}>
+        <Card className="p-6 bg-neutral-900 grow h-min border-neutral-800" ref={statsRef}>
           <div className="space-y-2">
-            <Label className="text-neutral-200 text-1xl mb-6">Current stats:</Label>
+            <Label className="text-1xl mb-6">Current stats:</Label>
             
             <div className='flex items-center justify-between'>
-              <Label className="text-neutral-200">Total</Label>
+              <Label>Total</Label>
               <span className="text-sm text-violet-300">{Math.pow(gridSizeUnchanged, dimensionsUnchanged)}</span>
             </div>
 
@@ -471,14 +470,14 @@ function App() {
             </div>
 
             <div className='flex items-center justify-between'>
-              <Label className="text-neutral-200">Time</Label>
+              <Label>Time</Label>
               <span className="text-sm text-violet-300">{frameCount}</span>
             </div>
             <div className='mt-3'>
               <a href='https://github.com/Anvarys/virus-simulation' target='_blank'>
-                <div className='mt-3 bg-neutral-700 p-1 rounded-[0.5rem] border-neutral-200 border flex flex-row'>
-                  <FontAwesomeIcon icon={faGithub} color='white' size='xl' className='mr-2'/>
-                  <Label className='text-neutral-200 text-center'>GitHub</Label>
+                <div className='mt-3 bg-neutral-800 p-1 rounded-[0.5rem] border-neutral-700 border flex flex-row'>
+                  <FontAwesomeIcon icon={faGithub} color='var(--color-neutral-100)' size='xl' className='mr-2'/>
+                  <Label className='text-center'>GitHub</Label>
                 </div>
               </a>
             </div>
