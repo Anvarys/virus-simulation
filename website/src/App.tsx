@@ -475,7 +475,7 @@ function App() {
               <a href='https://github.com/Anvarys/virus-simulation' target='_blank'>
                 <div className='mt-3 bg-neutral-800 p-1 rounded-[0.5rem] border-neutral-700 border flex flex-row'>
                   <FontAwesomeIcon icon={faGithub} color='var(--color-neutral-100)' size='xl' className='mr-2'/>
-                  <Label className='text-center'>GitHub</Label>
+                  <Label className='text-center cursor-pointer'>GitHub</Label>
                 </div>
               </a>
             </div>

@@ -60,7 +60,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
   const chartDataRef = useRef<ChartDataElement[]>([]);
   
   const chartSettingsRef = useRef<string[]>(
-    JSON.parse(localStorage.getItem("chartSettings") || "[]") || ["infected","dead","healthy"]
+    JSON.parse(localStorage.getItem("chartSettings") || '["infected","dead","healthy"]')
   )
 
   const [updateChartLines, setUpdateChartLines] = useState(0);
