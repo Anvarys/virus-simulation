@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, type JSX } from 'react';
-import type {BasicSimulationParams} from './utlis';
+import React, { useEffect, useRef, useState, type JSX } from 'react';
+import type {ThreeDimensionalSimulationParams} from './utlis';
 import { Canvas } from '@react-three/fiber';
-import { OrthographicCamera } from "@react-three/drei";
+import { OrbitControls, OrthographicCamera } from "@react-three/drei";
 
 
-const Simulation2D: React.FC<BasicSimulationParams> = ({
+const Simulation3D: React.FC<ThreeDimensionalSimulationParams> = ({
     gridSize, 
     initialInfected, 
     infectionChance, 
@@ -16,8 +16,10 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     setFrameCount,
     resizeFunc,
     onReset,
+    opacity,
+    cubeSize
 }) => {
-    const dimensions = 2;
+    const dimensions = 3;
 
     const initialPropsRef = useRef({
         gridSize,
@@ -141,48 +143,62 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     const props = initialPropsRef.current;
     for (let x = 0; x < props.gridSize; x++) {
         for (let y = 0; y < props.gridSize; y++){
-            grid.push(
-                <mesh key={`${x}-${y}`} position={[x-props.gridSize/2+0.5, y-props.gridSize/2+0.5, 0]}>
-                    <planeGeometry args={[1,1]}/>
-                    <meshStandardMaterial color={
-                        getColor(y + x * props.gridSize, frameRef.current)
-                    }/>
-                </mesh>
-            )
+            for (let z = 0; z < props.gridSize; z++){
+                grid.push(
+                    <mesh key={`${x}-${y}-${z}`} 
+                        position={[x-props.gridSize/2+0.5, y-props.gridSize/2+0.5, z-props.gridSize/2+0.5]}
+                        castShadow={false}
+                        receiveShadow={false}
+                    >
+                        <boxGeometry args={[cubeSize, cubeSize, cubeSize]}/>
+                        <meshStandardMaterial transparent color={getColor(z * props.gridSize * props.gridSize + y * props.gridSize + x, frameRef.current)} depthWrite={false} opacity={opacity}/>
+                    </mesh>
+                )
+            }
         }
     }
 
     const [zoom, setZoom] = React.useState(() => {
         const containerSize = Math.min(window.innerHeight * 0.6, window.innerHeight * 0.8);
-        return containerSize / gridSize * 1.6;
+        return containerSize / gridSize;
     });
 
 
     const handleResize = () => {
         const containerSize = Math.min(window.innerHeight * 0.6, window.innerHeight * 0.8);
-        setZoom(containerSize / gridSize * 1.6);
+        setZoom(containerSize / gridSize);
         resizeFunc?.();
     };
 
     window.onresize = handleResize;
 
-    const aspect = 1;
+    const [hasMoved, setHasMoved] = useState(false);
 
     return (
-        <Canvas>
-            <OrthographicCamera
-                key={zoom}
-                makeDefault
-                position={[0, 0, 10]}
-                zoom={zoom}
-                near={0.1}
-                far={100}
-                args={[-aspect * zoom, aspect * zoom, zoom, -zoom, 0.1, 100]}
-            />
-            <ambientLight intensity={1} />
-            {grid}
-        </Canvas>
+        <div className='w-full h-full flex relative'>
+            <Canvas dpr={[1, 2]}>
+                <OrthographicCamera
+                    makeDefault
+                    position={[
+                        Math.cos(Math.PI / 4.5) * 10, // X = 45° turn around Y
+                        Math.sin(Math.PI / 8) * 10, // Y = 22.5° tilt up
+                        Math.sin(Math.PI / 4.5) * 10, // Z = 45° turn around Y
+                    ]}
+                    zoom={zoom}
+                    near={0}
+                    far={100}
+                    
+                />
+                <ambientLight intensity={1} />
+                <OrbitControls enablePan enableRotate enableZoom onChange={() => {setHasMoved(true)}}/>
+
+                {grid}
+            </Canvas>
+            { !hasMoved &&
+            <p className='absolute top-1 left-3 text-neutral-400'>Try rotating camera or zooming</p>
+            }
+        </div>
     );
 }
 
-export default Simulation2D;
+export default Simulation3D;

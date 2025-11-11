@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import SimulationAnyD from '@/simulations/any-d';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import Simulation3D from '@/simulations/3d';
 
 function App() {
   const defaultSettings = {
@@ -22,6 +23,8 @@ function App() {
     recoveryDuration: 10,
     immunityDuration: 4,
     dimensions: 2,
+    opacity: 50,
+    cubeSize: 90
   };
 
   const [resetKey, setResetKey] = React.useState(0);
@@ -46,6 +49,12 @@ function App() {
   const [dimensions, setDimensions] = React.useState(() => {
     return Number(localStorage.getItem('dimensions')) || defaultSettings.dimensions;
   });
+  const [opacity, setOpacity] = React.useState(() => {
+    return Number(localStorage.getItem('opacity')) || defaultSettings.opacity;
+  });
+  const [cubeSize, setCubeSize] = React.useState(() => {
+    return Number(localStorage.getItem('cubeSize')) || defaultSettings.cubeSize;
+  });
   const [restartOnUpdate, setRestartOnUpdate] = React.useState(() => {
     return Boolean(localStorage.getItem('restartOnUpdate')) || false;
   });
@@ -60,7 +69,7 @@ function App() {
   const infoRef = React.useRef<HTMLDivElement | null>(null);
   const [statsIsRow, setStatsIsRow] = React.useState(false);
 
-  const simulationType = React.useRef(localStorage.getItem('simulationType') || "");
+  const [simulationType, setSimulationType] = React.useState(localStorage.getItem('simulationType') || "");
 
   const initialInfectedPercentage = 0.1;
 
@@ -74,7 +83,9 @@ function App() {
     localStorage.setItem('recoveryDuration', String(recoveryDuration));
     localStorage.setItem('immunityDuration', String(immunityDuration));
     localStorage.setItem('dimensions', String(dimensions));
-  }, [gridSize, initialInfected, infectionChance, mortalityChance, recoveryDuration, immunityDuration, dimensions]);
+    localStorage.setItem('opacity', String(opacity));
+    localStorage.setItem('cubeSize', String(cubeSize));
+  }, [gridSize, initialInfected, infectionChance, mortalityChance, recoveryDuration, immunityDuration, dimensions, opacity, cubeSize]);
 
   const [deadCount, setDeadCount] = React.useState(0);
   const [infectedCount, setInfectedCount] = React.useState(0);
@@ -83,7 +94,7 @@ function App() {
   const [isLauched, setIsLaunched] = React.useState(true);
 
   React.useEffect(() => {
-    if (simulationType.current !== "") {
+    if (simulationType !== "") {
       setIsLaunched(false);
     }
   }, []);
@@ -101,7 +112,6 @@ function App() {
     setMortalityChance(defaultSettings.mortalityChance);
     setRecoveryDuration(defaultSettings.recoveryDuration);
     setImmunityDuration(defaultSettings.immunityDuration);
-    setDimensions(defaultSettings.dimensions);
   };
 
   const handleSetGridSize = (size: number) => {
@@ -128,15 +138,8 @@ function App() {
   }
 
   const handleSetSimulationType = (type: string) => {
-    simulationType.current = type;
+    setSimulationType(type);
     localStorage.setItem('simulationType', type);
-
-    if (type == "2d")
-    handleSetDimensions(2);
-
-    if (type == "3d")
-    handleSetDimensions(3);
-
     handleReset();
   }
 
@@ -170,6 +173,14 @@ function App() {
     handleResize();
   }, []);
 
+  React.useEffect(() => {
+    if (simulationType == "2d")
+    handleSetDimensions(2);
+
+    if (simulationType == "3d")
+    handleSetDimensions(3);
+  }, [simulationType])
+
   return (
     <div className='min-h-[100dvh] min-w-full flex items-center p-[2dvh] bg-neutral-950'>
       <div className='flex gap-8 w-full max-w-[96dvw] h-[96dvh] text-neutral-100'>
@@ -183,7 +194,7 @@ function App() {
                 Launch Simulation
               </Button>
             }
-            { simulationType.current === "" && isLauched &&
+            { simulationType === "" && isLauched &&
               <div className='p-10 flex flex-col space-y-2'>
                 <h1 className='text-2xl text-center'>
                 This site visualises and shows different simulations of virus spreading.
@@ -193,7 +204,7 @@ function App() {
                 <h3 className='mt-10 text-center text-neutral-400 text-x'>Start by choosing a simulation on the right<br/>I suggest starting from 2D</h3>
               </div>
             }
-            { (simulationType.current === "2d" && isLauched)  &&
+            { (simulationType === "2d" && isLauched)  &&
             <Simulation2D 
               key={resetKey}
               gridSize={gridSize}
@@ -209,11 +220,25 @@ function App() {
             />
             }
 
-            { (simulationType.current === "3d" && isLauched) &&
-            <Label>3D Simulation WIP</Label>
+            { (simulationType === "3d" && isLauched) &&
+            <Simulation3D 
+              key={resetKey}
+              gridSize={gridSize}
+              initialInfected={initialInfected} 
+              infectionChance={infectionChance / 100}
+              immunityDuration={immunityDuration} 
+              recoveryDuration={recoveryDuration} 
+              mortalityChance={mortalityChance / 100} 
+              setInfectedCount={setInfectedCount}
+              setDeadCount={setDeadCount}
+              setFrameCount={setFrameCount}
+              resizeFunc={handleResize}
+              opacity={opacity / 100}
+              cubeSize={cubeSize / 100}
+            />
             }
             
-            { (simulationType.current === "any-d" && isLauched) &&
+            { (simulationType === "any-d" && isLauched) &&
             <SimulationAnyD 
               key={resetKey}
               gridSize={gridSize}
@@ -238,7 +263,7 @@ function App() {
         <div className={`flex grow flex-${statsIsRow ? 'row space-x-8' : 'col space-y-8'}`}>
         <Card className="p-6 space-y-6 bg-neutral-900 grow flex flex-col justify-between h-min border-neutral-800">
           <div className="space-y-4">
-            <Select onValueChange={(value) => {handleSetSimulationType(value)}} value={simulationType.current}>
+            <Select onValueChange={(value) => {handleSetSimulationType(value)}} value={simulationType}>
               <SelectTrigger className="w-full bg-violet-950 border-violet-900">
                 <SelectValue placeholder="Select a simulation"/>
               </SelectTrigger>
@@ -251,7 +276,7 @@ function App() {
               </SelectContent>
             </Select>
 
-            { simulationType.current === "any-d" &&
+            { simulationType === "any-d" &&
               <div className="space-y-2">
                 <div className='flex items-center justify-between'>
                   <Label>
@@ -430,6 +455,56 @@ function App() {
               />
             </div>
 
+            <div className="space-y-2">
+              <div className='flex items-center justify-between'>
+                <Label>
+                  Opacity
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon color="white" width='1rem' height='1rem'/>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className='text-center'>Opacity of the cubes<br/>in the visulaisation</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </Label>
+                <span className="text-sm text-violet-300">{opacity}</span>
+              </div>
+              <Slider
+                value={[opacity]}
+                onValueChange={([value]) => setOpacity(value)}
+                min={0}
+                max={100}
+                step={5}
+                className="w-full"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className='flex items-center justify-between'>
+                <Label>
+                  Cube size
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon color="white" width='1rem' height='1rem'/>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className='text-center'>Relative size of the cubes<br/>in the visulaisation</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </Label>
+                <span className="text-sm text-violet-300">{cubeSize}</span>
+              </div>
+              <Slider
+                value={[cubeSize]}
+                onValueChange={([value]) => setCubeSize(value)}
+                min={5}
+                max={100}
+                step={5}
+                className="w-full"
+              />
+            </div>
+
             <div className='flex items-center justify-between'>
               <Checkbox onCheckedChange={(checked: boolean) => {setRestartOnUpdate(checked)}} />
               <Label>
@@ -456,7 +531,7 @@ function App() {
               Reset settings
             </Button>
             <br/>
-            { simulationType.current !== "" &&
+            { simulationType !== "" &&
             <Button 
               onClick={handleReset}
               className="bg-cyan-800 border-cyan-700 border hover:bg-cyan-700 hover:border-cyan-600"
@@ -469,7 +544,7 @@ function App() {
 
         {/* Info */}
         </Card>
-        { simulationType.current !== "" &&
+        { simulationType !== "" &&
         <Card className="p-6 bg-neutral-900 grow h-min border-neutral-800" ref={infoRef}>
           <div className="space-y-2">
             <div className='flex items-center justify-between'>

@@ -16,9 +16,14 @@ export interface AnyDimensionalSimulationParams extends BasicSimulationParams {
     dimensions: number;
 }
 
+export interface ThreeDimensionalSimulationParams extends BasicSimulationParams {
+    opacity: number;
+    cubeSize: number;
+}
+
 export interface ChartDataElement {
-    time: number,
-    dead: number,
-    infected: number,
-    healthy: number
+    time: number;
+    dead: number;
+    infected: number;
+    healthy: number;
 }
