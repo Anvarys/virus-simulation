@@ -77,7 +77,11 @@
 
   --dead: #b84d4d;
   --healthy: #ac63cf;
-  --infected: #63cf83;
+  --infected: #51a96b;
+
+  --dead-lighter: #da5c5c;
+  --healthy-lighter: #c873ef;
+  --infected-lighter: #63cf83;
 }
 
 .dark {

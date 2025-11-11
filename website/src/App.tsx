@@ -447,8 +447,6 @@ function App() {
         { simulationType.current !== "" &&
         <Card className="p-6 bg-neutral-900 grow h-min border-neutral-800" ref={statsRef}>
           <div className="space-y-2">
-            <Label className="text-1xl mb-6">Current stats:</Label>
-            
             <div className='flex items-center justify-between'>
               <Label>Total</Label>
               <span className="text-sm text-violet-300">{Math.pow(gridSizeUnchanged, dimensionsUnchanged)}</span>

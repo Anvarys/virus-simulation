@@ -1,7 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { AnyDimensionalSimulationParams, ChartDataElement} from './utlis';
 import { type ChartConfig, ChartContainer } from "@/components/ui/chart" 
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Label } from '@/components/ui/label';
+import { toast } from "sonner"
 
 
 const chartConfig = {
@@ -54,7 +57,13 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
 
   const deadCountRef = useRef(0);
   const updateDisplayRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const chartData = useRef<ChartDataElement[]>([]);
+  const chartDataRef = useRef<ChartDataElement[]>([]);
+  
+  const chartSettingsRef = useRef<string[]>(
+    JSON.parse(localStorage.getItem("chartSettings") || "[]") || ["infected","dead","healthy"]
+  )
+
+  const [updateChartLines, setUpdateChartLines] = useState(0);
 
   function get_infection_chance(id: number, frame: number) {
     const grid = gridRef.current;
@@ -76,7 +85,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
   }
 
   function addChartData(chartDataElement: ChartDataElement) {
-    chartData.current.push(chartDataElement);
+    chartDataRef.current.push(chartDataElement);
   }
 
   if (frameRef.current === 0) {
@@ -101,7 +110,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
     const grid = gridRef.current;
     const props = initialPropsRef.current;
 
-    if (chartData.current.length < 1){
+    if (chartDataRef.current.length < 1){
       addChartData({
         time: 1,
         dead: deadCountRef.current,
@@ -142,10 +151,12 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
         infected: infected,
         healthy: props.total - deadCountRef.current - infected
       })
-
       frameRef.current += 1;
       if (infected !== 0) {
         frameIdRef.current = requestAnimationFrame(loop);
+      } else {
+        frameRef.current = -1;
+        console.log("Simulation ended");
       }
     };
 
@@ -163,15 +174,57 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
     resizeFunc?.();
   };
 
+  const handleGroupToggleValueChange = (value: string[]) => {
+    if (value.length > 0){
+      chartSettingsRef.current = value
+    } else {
+      toast.error("You need to choose at least one value")
+    }
+    if (frameRef.current < 0) {
+      setUpdateChartLines(1-updateChartLines)
+    }
+    localStorage.setItem("chartSettings",JSON.stringify(chartSettingsRef.current))
+  }
+
   window.onresize = handleResize;
 
   return (
-    <div className='w-full h-full p-8 flex flex-col space-y-8'>
+    <div className='w-full h-full p-8 pl-2 flex flex-col'>
+      <ToggleGroup type='multiple' variant="outline" spacing={2} size="sm"
+        value={chartSettingsRef.current} onValueChange={handleGroupToggleValueChange}
+        className='h-min ml-10 mb-3'
+        >
+          <Label className='mr-2'>Toggles:</Label>
+        <ToggleGroupItem
+          value='infected'
+          className='border-neutral-100 data-[state=on]:bg-[var(--infected)] hover:data-[state=on]:bg-[var(--infected-lighter)] 
+          hover:bg-[var(--infected-lighter)] hover:text-neutral-100 data-[state=on]:text-neutral-100 
+          data-[state=on]:border-[var(--infected-lighter)] hover:border-[var(--infected-lighter)]'
+        >
+          Infected
+        </ToggleGroupItem>
+        <ToggleGroupItem
+          value='dead'
+          className='border-neutral-100 data-[state=on]:bg-[var(--dead)] hover:data-[state=on]:bg-[var(--dead-lighter)] 
+          hover:bg-[var(--dead-lighter)] hover:text-neutral-100 data-[state=on]:text-neutral-100 
+          data-[state=on]:border-[var(--dead-lighter)] hover:border-[var(--dead-lighter)]'
+        >
+          Dead
+        </ToggleGroupItem>
+        <ToggleGroupItem
+          value='healthy'
+          className='border-neutral-100 data-[state=on]:bg-[var(--healthy)] hover:data-[state=on]:bg-[var(--healthy-lighter)] 
+          hover:bg-[var(--healthy-lighter)] hover:text-neutral-100 data-[state=on]:text-neutral-100 
+          data-[state=on]:border-[var(--healthy-lighter)] hover:border-[var(--healthy-lighter)]'
+        >
+          Healthy
+        </ToggleGroupItem>
+      </ToggleGroup>
       <ChartContainer className='p-2 h-[50%]' config={chartConfig}>
         <LineChart
-        key={frameRef.current}
+        key={frameRef.current+updateChartLines}
         accessibilityLayer
-        data={chartData.current}
+        data={chartDataRef.current}
         margin={{}}
         >
           <CartesianGrid vertical={false}/>
@@ -185,6 +238,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
           <YAxis
             tickLine={false}
           />
+          { chartSettingsRef.current.includes("dead") &&
           <Line 
             dataKey="dead"
             type="monotone"
@@ -193,6 +247,8 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
             dot={false}
             isAnimationActive={false}
           />
+          }
+          { chartSettingsRef.current.includes("infected") &&
           <Line
             dataKey="infected"
             type="monotone"
@@ -201,6 +257,8 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
             dot={false}
             isAnimationActive={false}
           />
+          }
+          { chartSettingsRef.current.includes("healthy") &&
           <Line
             dataKey="healthy"
             type="monotone"
@@ -209,13 +267,14 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
             dot={false}
             isAnimationActive={false}
           />
+          }
         </LineChart>
       </ChartContainer>
       <ChartContainer className='p-2 h-[calc(50%-2rem)]' config={chartConfig}>
         <LineChart
-        key={frameRef.current}
+        key={frameRef.current+updateChartLines}
         accessibilityLayer
-        data={chartData.current.slice(-maxChartData)}
+        data={chartDataRef.current.slice(-maxChartData)}
         margin={{}}
         >
           <CartesianGrid vertical={false}/>
@@ -229,6 +288,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
           <YAxis
             tickLine={false}
           />
+          { chartSettingsRef.current.includes("dead") &&
           <Line 
             dataKey="dead"
             type="monotone"
@@ -237,6 +297,8 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
             dot={false}
             isAnimationActive={false}
           />
+          }
+          { chartSettingsRef.current.includes("infected") &&
           <Line
             dataKey="infected"
             type="monotone"
@@ -245,6 +307,8 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
             dot={false}
             isAnimationActive={false}
           />
+          }
+          { chartSettingsRef.current.includes("healthy") &&
           <Line
             dataKey="healthy"
             type="monotone"
@@ -253,6 +317,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
             dot={false}
             isAnimationActive={false}
           />
+          }
         </LineChart>
       </ChartContainer>
     </div>
