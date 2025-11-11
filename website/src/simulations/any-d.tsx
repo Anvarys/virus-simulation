@@ -132,16 +132,18 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
             continue;
           }
           infected += 1;
+          continue
         }
         if (grid[i*cellStates] < frame && grid[i*cellStates+1] < frame && Math.random() < get_infection_chance(i, frame)) {
           grid[i*cellStates] = frame + props.recoveryDuration;
           grid[i*cellStates + 1] = frame + props.recoveryDuration + props.immunityDuration;
+          infected += 1;
         }
       }
 
       setInfectedCount(infected);
       setDeadCount(deadCountRef.current);
-      setFrameCount(frameRef.current);
+      setFrameCount(frame);
 
       addChartData({
         time: frameRef.current,
@@ -154,7 +156,6 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
         frameIdRef.current = requestAnimationFrame(loop);
       } else {
         frameRef.current = -1;
-        console.log("Simulation ended");
       }
     };
 

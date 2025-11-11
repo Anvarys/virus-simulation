@@ -18,7 +18,7 @@ function App() {
     gridSize: 20,
     initialInfected: 4,
     infectionChance: 20,
-    mortalityChance: 2,
+    mortalityChance: 0.2,
     recoveryDuration: 10,
     immunityDuration: 4,
     dimensions: 2,

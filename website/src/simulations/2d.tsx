@@ -28,54 +28,45 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     });
 
     const cellStates = 3;
+    const dimensions = 2;
+
     const gridRef = useRef<Int16Array>(new Int16Array(initialPropsRef.current.total*cellStates));
     const frameIdRef = useRef<number | undefined>(undefined);
     const frameRef = useRef<number>(0);
-    const lastFrameTimeRef = useRef<number>(0);
     const deadCountRef = useRef(0);
     const updateDisplayRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     const colorHealthy = getComputedStyle(document.documentElement).getPropertyValue("--healthy").trim()
     const colorInfected = getComputedStyle(document.documentElement).getPropertyValue("--infected").trim()
     const colorDead = getComputedStyle(document.documentElement).getPropertyValue("--dead").trim()
-    
-    const directions = [
-        [-1, 0], [1, 0], [0, -1], [0, 1],
-    ];
 
-    function idx(id: number): [number, number] {
-        return [id % initialPropsRef.current.gridSize, Math.floor(id / initialPropsRef.current.gridSize)];
-    }
-
-    function getColor(x: number, y: number, frame: number) {
+    function getColor(id: number, frame: number) {
         const grid = gridRef.current;
-        const props = initialPropsRef.current;
         if (!grid) return colorHealthy;
-        const id = (y * props.gridSize + x) * cellStates;
-        if (grid[id+2] === 1) {
+        if (grid[id*3+2] === 1) {
             return colorDead;
-        } else if (grid[id] >= frame) {
+        } else if (grid[id*3] >= frame) {
             return colorInfected;
         } else {
             return colorHealthy;
         }
     }
 
-    function get_infection_chance(x: number, y: number, frame: number) {
+    function get_infection_chance(id: number, frame: number) {
         const grid = gridRef.current;
         const props = initialPropsRef.current;
         if (!grid) return 0;
         
         let infected_neighbors = 0;
-        for (const [dx, dy] of directions) {
-            const nx = x + dx;
-            const ny = y + dy;
-            if (nx >= 0 && nx < props.gridSize && ny >= 0 && ny < props.gridSize) {
-                const n_id = (ny * props.gridSize + nx) * cellStates;
-                if (grid[n_id] >= frame && grid[n_id+2] === 0 && grid[n_id] !== frame + props.recoveryDuration + props.immunityDuration) {
-                    infected_neighbors += 1;
-                }
+        for (let dim = 0; dim < dimensions; dim++) {
+        for (let dir of [-1, 1]) {
+            const n_id = id + dir * Math.pow(props.gridSize, dim);
+            if (n_id < 0 || n_id >= props.total) continue;
+
+            if (grid[n_id*cellStates] >= frame) {
+            infected_neighbors += 1;
             }
+        }
         }
         return 1 - Math.pow(1 - props.infectionChance, infected_neighbors);
     }
@@ -101,13 +92,14 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     useEffect(() => {
         const grid = gridRef.current;
         const props = initialPropsRef.current;
-        lastFrameTimeRef.current = performance.now();
 
         const loop = () => {
             let infected = 0;
+            const frame = frameRef.current
+
             for (let i = 0; i < props.total; i++) {
                 if (grid[i*cellStates+2] === 1) continue;
-                if (grid[i*cellStates] >= frameRef.current) {
+                if (grid[i*cellStates] >= frame) {
                     if (Math.random() < props.mortalityChance) {
                         grid[i*cellStates+2] = 1;
                         deadCountRef.current += 1;
@@ -116,23 +108,16 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
                     infected += 1;
                     continue;
                 }
-                if (grid[i*cellStates+1] < frameRef.current && Math.random() < get_infection_chance(...idx(i), frameRef.current)) {
-                    if (Math.random() < props.mortalityChance) {
-                        grid[i*cellStates+2] = 1;
-                        deadCountRef.current += 1;
-                        continue;
-                    }
-                    grid[i*cellStates] = frameRef.current + props.recoveryDuration;
-                    grid[i*cellStates + 1] = frameRef.current + props.recoveryDuration + props.immunityDuration;
-                }
-                if (grid[i*cellStates] >= frameRef.current) {
-                    infected += 1;
+                if (grid[i*cellStates] < frame && grid[i*cellStates+1] < frame && Math.random() < get_infection_chance(i, frame)) {
+                    grid[i*cellStates] = frame + props.recoveryDuration;
+                    grid[i*cellStates + 1] = frame + props.recoveryDuration + props.immunityDuration;
+                    infected += 1
                 }
             }
 
             setInfectedCount(infected);
             setDeadCount(deadCountRef.current);
-            setFrameCount(frameRef.current);
+            setFrameCount(frame);
 
             frameRef.current += 1;
             if (infected !== 0) {
@@ -159,7 +144,7 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
                 <mesh key={`${x}-${y}`} position={[x-props.gridSize/2+0.5, y-props.gridSize/2+0.5, 0]}>
                     <planeGeometry args={[1,1]}/>
                     <meshStandardMaterial color={
-                        getColor(x, y, frameRef.current)
+                        getColor(y + x * props.gridSize, frameRef.current)
                     }/>
                 </mesh>
             )
