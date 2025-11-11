@@ -108,6 +108,11 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
             for (let i = 0; i < props.total; i++) {
                 if (grid[i*cellStates+2] === 1) continue;
                 if (grid[i*cellStates] >= frameRef.current) {
+                    if (Math.random() < props.mortalityChance) {
+                        grid[i*cellStates+2] = 1;
+                        deadCountRef.current += 1;
+                        continue;
+                    }
                     infected += 1;
                     continue;
                 }
@@ -120,7 +125,7 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
                     grid[i*cellStates] = frameRef.current + props.recoveryDuration;
                     grid[i*cellStates + 1] = frameRef.current + props.recoveryDuration + props.immunityDuration;
                 }
-                if (grid[i*cellStates + 1] >= frameRef.current) {
+                if (grid[i*cellStates] >= frameRef.current) {
                     infected += 1;
                 }
             }

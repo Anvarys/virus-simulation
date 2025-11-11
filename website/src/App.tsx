@@ -57,7 +57,7 @@ function App() {
     return dimensions;
   });
 
-  const statsRef = React.useRef<HTMLDivElement | null>(null);
+  const infoRef = React.useRef<HTMLDivElement | null>(null);
   const [statsIsRow, setStatsIsRow] = React.useState(false);
 
   const simulationType = React.useRef(localStorage.getItem('simulationType') || "");
@@ -106,7 +106,7 @@ function App() {
 
   const handleSetGridSize = (size: number) => {
     setGridSize(size);
-    const initialInfectedlimit = Math.floor(Math.pow(gridSize, dimensions) * initialInfectedPercentage)+1;
+    const initialInfectedlimit = Math.floor(Math.pow(size, dimensions) * initialInfectedPercentage)+1;
     if (initialInfected > initialInfectedlimit)
     {
       setInitialInfected(initialInfectedlimit);
@@ -114,13 +114,29 @@ function App() {
 
     const dimensionsLimit = Math.floor(totalLimitLog / Math.log(size));
     if (dimensions > dimensionsLimit) {
-      setDimensions(dimensionsLimit);
+      handleSetDimensions(dimensionsLimit);
+    }
+  }
+
+  const handleSetDimensions = (dims: number) => {
+    setDimensions(dims)
+    const initialInfectedlimit = Math.floor(Math.pow(gridSize, dims) * initialInfectedPercentage)+1;
+    if (initialInfected > initialInfectedlimit)
+    {
+      setInitialInfected(initialInfectedlimit);
     }
   }
 
   const handleSetSimulationType = (type: string) => {
     simulationType.current = type;
     localStorage.setItem('simulationType', type);
+
+    if (type == "2d")
+    handleSetDimensions(2);
+
+    if (type == "3d")
+    handleSetDimensions(3);
+
     handleReset();
   }
 
@@ -136,7 +152,7 @@ function App() {
   }
 
   const handleResize = () => {
-    const statsElement = statsRef.current;
+    const statsElement = infoRef.current;
     if (statsElement) {
       const rect = statsElement.getBoundingClientRect();
       if (rect.right > window.innerWidth) {
@@ -168,7 +184,14 @@ function App() {
               </Button>
             }
             { simulationType.current === "" && isLauched &&
-              <Label>Please choose a simulation to run</Label>
+              <div className='p-10 flex flex-col space-y-2'>
+                <h1 className='text-2xl text-center'>
+                This site visualises and shows different simulations of virus spreading.
+                </h1>
+                <p className='text-center mr-[20%] ml-[20%] text-neutral-200'>
+                  Main idea is that there are humans in a grid where each human has an <span className='text-violet-300'>infection chance</span> - chance of getting infected each unit of time by it's infected neighbors. When a human is infected they will stay infected for the <span className='text-violet-300'>recovery duration</span> and then they will have an <span className='text-violet-300'>immunity duration</span> of time when they are immune to the virus. And also there is <span className='text-violet-300'>mortality chance</span> - chance of an infected human dying (per unit of time)</p>
+                <h3 className='mt-10 text-center text-neutral-400 text-x'>Start by choosing a simulation on the right<br/>I suggest starting from 2D</h3>
+              </div>
             }
             { (simulationType.current === "2d" && isLauched)  &&
             <Simulation2D 
@@ -215,7 +238,7 @@ function App() {
         <div className={`flex grow flex-${statsIsRow ? 'row space-x-8' : 'col space-y-8'}`}>
         <Card className="p-6 space-y-6 bg-neutral-900 grow flex flex-col justify-between h-min border-neutral-800">
           <div className="space-y-4">
-            <Select onValueChange={(value) => {handleSetSimulationType(value)}} defaultValue={simulationType.current}>
+            <Select onValueChange={(value) => {handleSetSimulationType(value)}} value={simulationType.current}>
               <SelectTrigger className="w-full bg-violet-950 border-violet-900">
                 <SelectValue placeholder="Select a simulation"/>
               </SelectTrigger>
@@ -247,7 +270,7 @@ function App() {
                 </div>
                 <Slider
                   value={[dimensions]}
-                  onValueChange={([value]) => handleSetSettings(setDimensions,value)}
+                  onValueChange={([value]) => handleSetSettings(handleSetDimensions,value)}
                   min={1}
                   max={Math.floor(totalLimitLog / Math.log(gridSize))}
                   step={1}
@@ -341,18 +364,18 @@ function App() {
                       <InfoIcon color="white" width='1rem' height='1rem'/>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p className='text-center'>Chance that a human will<br/>die after getting infected</p>
+                      <p className='text-center'>Chance that a human will<br/>die each unit of time<br/>when he is infected</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
-                <span className="text-sm text-violet-300 text-right min-w-[2.5rem]">{mortalityChance}%</span>
+                <span className="text-sm text-violet-300 text-right min-w-[3rem]">{mortalityChance}%</span>
               </div>
               <Slider
                 value={[mortalityChance]}
                 onValueChange={([value]) => handleSetSettings(setMortalityChance,value)}
                 min={0}
-                max={100}
-                step={0.2}
+                max={10}
+                step={0.02}
                 className="w-full"
               />
             </div>
@@ -433,19 +456,21 @@ function App() {
               Reset settings
             </Button>
             <br/>
+            { simulationType.current !== "" &&
             <Button 
               onClick={handleReset}
               className="bg-cyan-800 border-cyan-700 border hover:bg-cyan-700 hover:border-cyan-600"
             >
               Restart simulation
             </Button>
+            }
             
           </div>
 
-        {/* Current stats */}
+        {/* Info */}
         </Card>
         { simulationType.current !== "" &&
-        <Card className="p-6 bg-neutral-900 grow h-min border-neutral-800" ref={statsRef}>
+        <Card className="p-6 bg-neutral-900 grow h-min border-neutral-800" ref={infoRef}>
           <div className="space-y-2">
             <div className='flex items-center justify-between'>
               <Label>Total</Label>
@@ -478,6 +503,9 @@ function App() {
                   <Label className='text-center cursor-pointer'>GitHub</Label>
                 </div>
               </a>
+            </div>
+            <div className='grow'>
+              <p className='text-xs text-neutral-400 text-center hover:underline cursor-pointer' onClick={() => {handleSetSimulationType("")}}>About this project</p>
             </div>
           </div>
         </Card>

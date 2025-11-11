@@ -119,25 +119,23 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
       })
     }
 
-    const loop = () => {
+    const loop = () => { 
       let infected = 0;
+      const frame = frameRef.current
+
       for (let i = 0; i < props.total; i++) {
         if (grid[i*cellStates+2] === 1) continue;
-        if (grid[i*cellStates] >= frameRef.current) {
-          infected += 1;
-          continue;
-        }
-        if (grid[i*cellStates+1] < frameRef.current && Math.random() < get_infection_chance(i, frameRef.current)) {
+        if (grid[i*cellStates] >= frame) {
           if (Math.random() < props.mortalityChance) {
             grid[i*cellStates+2] = 1;
             deadCountRef.current += 1;
             continue;
           }
-          grid[i*cellStates] = frameRef.current + props.recoveryDuration;
-          grid[i*cellStates + 1] = frameRef.current + props.recoveryDuration + props.immunityDuration;
-        }
-        if (grid[i*cellStates + 1] >= frameRef.current) {
           infected += 1;
+        }
+        if (grid[i*cellStates] < frame && grid[i*cellStates+1] < frame && Math.random() < get_infection_chance(i, frame)) {
+          grid[i*cellStates] = frame + props.recoveryDuration;
+          grid[i*cellStates + 1] = frame + props.recoveryDuration + props.immunityDuration;
         }
       }
 
