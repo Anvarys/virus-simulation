@@ -16,7 +16,7 @@ import Simulation3D from '@/simulations/3d';
 
 function App() {
   const defaultSettings = {
-    gridSize: 20,
+    gridSize: 15,
     initialInfected: 4,
     infectionChance: 20,
     mortalityChance: 0.2,

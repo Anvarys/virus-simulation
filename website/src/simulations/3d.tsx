@@ -185,7 +185,7 @@ const Simulation3D: React.FC<ThreeDimensionalSimulationParams> = ({
                         Math.sin(Math.PI / 4.5) * 10, // Z = 45° turn around Y
                     ]}
                     zoom={zoom}
-                    near={0}
+                    near={-10}
                     far={100}
                     
                 />
