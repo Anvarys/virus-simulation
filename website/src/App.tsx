@@ -454,7 +454,7 @@ function App() {
                 className="w-full"
               />
             </div>
-
+            { simulationType === "3d" &&
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
                 <Label>
@@ -479,7 +479,8 @@ function App() {
                 className="w-full"
               />
             </div>
-
+            }
+            { simulationType === "3d" &&
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
                 <Label>
@@ -504,7 +505,7 @@ function App() {
                 className="w-full"
               />
             </div>
-
+            }
             <div className='flex items-center justify-between'>
               <Checkbox onCheckedChange={(checked: boolean) => {setRestartOnUpdate(checked)}} />
               <Label>

@@ -29,13 +29,13 @@ poetry run python simulations/choose.py
 4. Web version of the 2d simulation ✅
 5. Make it not ugly ✅
 6. Publish web version via [Cloudflare Pages](https://pages.cloudflare.com/) ✅
-7. Web version of X dimensional simulation
-8. Graphics for X dimensional web simulation
-9. Web version of the 3d simulation (prob would crash any browser)
-10. Create other simulations (like civilisations)
+7. Web version of X dimensional simulation ✅
+8. Charts for X dimensional web simulation ✅
+9. Web version of the 3d simulation (prob would crash any browser) ✅
+10. Add ability to create different viruses
 
 For Axiom I'm expecting to get to around 8th point in my TODO
-
+UPD: Wow, I'm already done with 3D simulation (11 Nov)
 
 ---
 
