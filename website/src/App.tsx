@@ -155,9 +155,9 @@ function App() {
   }
 
   const handleResize = () => {
-    const statsElement = infoRef.current;
-    if (statsElement) {
-      const rect = statsElement.getBoundingClientRect();
+    const infoElement = infoRef.current;
+    if (infoElement) {
+      const rect = infoElement.getBoundingClientRect();
       if (rect.right > window.innerWidth) {
         setStatsIsRow(false);
       }
@@ -259,8 +259,10 @@ function App() {
           </div>
         </Card>
 
-        {/* Controls Panel */}
+        {/* Side Panel */}
         <div className={`flex grow flex-${statsIsRow ? 'row space-x-8' : 'col space-y-8'}`}>
+
+        {/* Control Panel */}
         <Card className="p-6 space-y-6 bg-neutral-900 grow flex flex-col justify-between h-min border-neutral-800">
           <div className="space-y-4">
             <Select onValueChange={(value) => {handleSetSimulationType(value)}} value={simulationType}>
@@ -543,7 +545,7 @@ function App() {
             
           </div>
 
-        {/* Info */}
+        {/* Info Panel */}
         </Card>
         { simulationType !== "" &&
         <Card className="p-6 bg-neutral-900 grow h-min border-neutral-800" ref={infoRef}>

@@ -27,3 +27,22 @@ export interface ChartDataElement {
     infected: number;
     healthy: number;
 }
+
+export type Virus = {
+    infectionChance: number;
+    recoveryDuration: number;
+    mortalityChance: number;
+    immunityDuration: number;
+    color: string;
+}
+
+type RGB = {
+  r: number;
+  g: number;
+  b: number;
+};
+
+export const rgbToHex = ({ r, g, b }: RGB): string => {
+  const toHex = (n: number) => n.toString(16).padStart(2, "0").toUpperCase();
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
