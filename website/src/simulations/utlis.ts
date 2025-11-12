@@ -34,6 +34,7 @@ export type Virus = {
     mortalityChance: number;
     immunityDuration: number;
     color: string;
+    name: string;
 }
 
 type RGB = {
