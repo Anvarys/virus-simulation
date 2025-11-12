@@ -556,7 +556,7 @@ function App() {
             </div>
 
             <div className='flex items-center justify-between'>
-              <Label className="text-[var(--infected)]">Infected</Label>
+              <Label className="text-[var(--infected)] pr-2">Total infected</Label>
               <span className="text-sm text-violet-300">{infectedCount}</span>
             </div>
 

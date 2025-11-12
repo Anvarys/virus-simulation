@@ -5,6 +5,8 @@ import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Label } from '@/components/ui/label';
 import { toast } from "sonner"
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import InfoIcon from '@/components/icons/InfoIcon';
 
 
 const chartConfig = {
@@ -12,7 +14,7 @@ const chartConfig = {
     label: "Dead",
     color: "var(--dead)"
   },
-  infected: {
+  infectedTotal: {
     label: "Infected",
     color: "var(--infected)"
   },
@@ -45,15 +47,15 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
   });
 
   const virusesRef = useRef<Virus[]>([
-          {
-              infectionChance: infectionChance,
-              recoveryDuration: recoveryDuration,
-              mortalityChance: mortalityChance,
-              immunityDuration: immunityDuration,
-              color: getComputedStyle(document.documentElement).getPropertyValue("--infected").trim(),
-              name: "52"
-          } satisfies Virus
-      ]);
+    {
+      infectionChance: infectionChance,
+      recoveryDuration: recoveryDuration,
+      mortalityChance: mortalityChance,
+      immunityDuration: immunityDuration,
+      color: getComputedStyle(document.documentElement).getPropertyValue("--infected").trim(),
+      name: "Main virus"
+    } satisfies Virus
+  ]);
 
   const cellStates = 4;
   const maxChartData = 500;
@@ -67,7 +69,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
   const chartDataRef = useRef<ChartDataElement[]>([]);
   
   const chartSettingsRef = useRef<string[]>(
-    JSON.parse(localStorage.getItem("chartSettings") || JSON.stringify([...virusesRef.current.map((virus) => {virus.name}), "healthy","dead"]))
+    JSON.parse(localStorage.getItem("chartSettings") ?? JSON.stringify(["healthy","dead","infectedTotal"]))
   )
 
   const [updateChartLines, setUpdateChartLines] = useState(0);
@@ -130,20 +132,16 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
     const grid = gridRef.current;
     const props = initialPropsRef.current;
 
-    if (chartDataRef.current.length < 1){
-      addChartData({
-        time: 1,
-        dead: deadCountRef.current,
-        infected: props.initialInfected,
-        healthy: props.total - props.initialInfected
-      })
-    }
-
     const loop = () => { 
-      let infected = 0;
+      let infectedTotal = 0;
       const frame = frameRef.current
-
       const viruses = virusesRef.current
+
+      const infected: { [key: number]: number } = {};
+      for (let i = 0; i < viruses.length; i++) {
+        infected[i] = 0;
+      }
+
       for (let i = 0; i < props.total; i++) {
         if (grid[i*cellStates+2] === 1) continue;
         if (grid[i*cellStates] >= frame) {
@@ -152,27 +150,30 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
             deadCountRef.current += 1;
             continue;
           }
-          infected += 1;
+          infectedTotal += 1;
+          infected[grid[i*cellStates+3]] += 1
           continue;
         }
         if (grid[i*cellStates] < frame && grid[i*cellStates+1] < frame && get_infected(i, frameRef.current)) {
-          infected += 1
+          infectedTotal += 1
+          infected[grid[i*cellStates+3]] += 1
         }
       }
       
 
-      setInfectedCount(infected);
+      setInfectedCount(infectedTotal);
       setDeadCount(deadCountRef.current);
       setFrameCount(frame);
 
       addChartData({
         time: frameRef.current,
         dead: deadCountRef.current,
-        infected: infected,
-        healthy: props.total - deadCountRef.current - infected
+        infectedTotal: infectedTotal,
+        healthy: props.total - deadCountRef.current - infectedTotal,
+        infected: infected
       })
       frameRef.current += 1;
-      if (infected !== 0) {
+      if (infectedTotal !== 0) {
         frameIdRef.current = requestAnimationFrame(loop);
       } else {
         frameRef.current = -1;
@@ -213,14 +214,43 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
         value={chartSettingsRef.current} onValueChange={handleGroupToggleValueChange}
         className='h-min ml-10 mb-3'
         >
-          <Label className='mr-2'>Toggles:</Label>
+          <div className='mr-2 flex flex-row space-x-2'>
+            <Tooltip>
+              <TooltipTrigger>
+                <InfoIcon color="white" width='1rem' height='1rem'/>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className='text-center'>Toggles for different stats on<br/>charts, those random like toggles<br/>are for different virus types</p>
+              </TooltipContent>
+            </Tooltip>
+            <Label className=''>Toggles:</Label>
+          </div>
+        { virusesRef.current.map((virus) =>
         <ToggleGroupItem
-          value='infected'
+          value={virus.name}
+          className="border-neutral-100 
+            data-[state=on]:bg-[var(--color)] 
+            hover:data-[state=on]:bg-[var(--color)] 
+            hover:bg-[var(--color)] 
+            hover:text-neutral-100 
+            data-[state=on]:text-neutral-100 
+            data-[state=on]:border-[var(--color)] 
+            hover:border-[var(--color)]
+            opacity-90
+            hover:opacity-100"
+          style={{ "--color": virus.color} as React.CSSProperties}
+        >
+          {virus.name}
+        </ToggleGroupItem>
+        )
+        }
+        <ToggleGroupItem
+          value='infectedTotal'
           className='border-neutral-100 data-[state=on]:bg-[var(--infected)] hover:data-[state=on]:bg-[var(--infected-lighter)] 
           hover:bg-[var(--infected-lighter)] hover:text-neutral-100 data-[state=on]:text-neutral-100 
           data-[state=on]:border-[var(--infected-lighter)] hover:border-[var(--infected-lighter)]'
         >
-          Infected
+          Total infected
         </ToggleGroupItem>
         <ToggleGroupItem
           value='dead'
@@ -267,9 +297,9 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
             isAnimationActive={false}
           />
           }
-          { chartSettingsRef.current.includes("infected") &&
+          { chartSettingsRef.current.includes("infectedTotal") &&
           <Line
-            dataKey="infected"
+            dataKey="infectedTotal"
             type="monotone"
             stroke='var(--infected)'
             strokeWidth={2}
@@ -277,6 +307,17 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
             isAnimationActive={false}
           />
           }
+          { virusesRef.current.map((virus, id) => {
+            if (!chartSettingsRef.current.includes(virus.name)) {return};
+            return (<Line
+              dataKey={`infected.${id}`}
+              type="monotone"
+              stroke={virus.color}
+              strokeWidth={2}
+              dot={false}
+              isAnimationActive={false}
+            />)
+          })}
           { chartSettingsRef.current.includes("healthy") &&
           <Line
             dataKey="healthy"
@@ -317,16 +358,27 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
             isAnimationActive={false}
           />
           }
-          { virusesRef.current.map(() => {
+          { virusesRef.current.map((virus, id) => {
+            if (!chartSettingsRef.current.includes(virus.name)) {return};
+            return (<Line
+              dataKey={`infected.${id}`}
+              type="monotone"
+              stroke={virus.color}
+              strokeWidth={2}
+              dot={false}
+              isAnimationActive={false}
+            />)
+          })}
+          { chartSettingsRef.current.includes("infectedTotal") &&
           <Line
-            dataKey="infected"
+            dataKey="infectedTotal"
             type="monotone"
             stroke='var(--infected)'
             strokeWidth={2}
             dot={false}
             isAnimationActive={false}
           />
-          })}
+          }
           { chartSettingsRef.current.includes("healthy") &&
           <Line
             dataKey="healthy"

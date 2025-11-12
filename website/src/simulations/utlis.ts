@@ -24,8 +24,9 @@ export interface ThreeDimensionalSimulationParams extends BasicSimulationParams 
 export interface ChartDataElement {
     time: number;
     dead: number;
-    infected: number;
+    infected: { [key: number]: number };
     healthy: number;
+    infectedTotal: number
 }
 
 export type Virus = {
