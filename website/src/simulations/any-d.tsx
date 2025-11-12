@@ -225,7 +225,8 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
             </Tooltip>
             <Label className=''>Toggles:</Label>
           </div>
-        { virusesRef.current.map((virus) =>
+        { virusesRef.current.length > 1 &&
+        virusesRef.current.map((virus) =>
         <ToggleGroupItem
           value={virus.name}
           className="border-neutral-100 
@@ -307,7 +308,8 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
             isAnimationActive={false}
           />
           }
-          { virusesRef.current.map((virus, id) => {
+          { virusesRef.current.length > 1 &&
+          virusesRef.current.map((virus, id) => {
             if (!chartSettingsRef.current.includes(virus.name)) {return};
             return (<Line
               dataKey={`infected.${id}`}
@@ -358,7 +360,8 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
             isAnimationActive={false}
           />
           }
-          { virusesRef.current.map((virus, id) => {
+          { virusesRef.current.length > 1 &&
+          virusesRef.current.map((virus, id) => {
             if (!chartSettingsRef.current.includes(virus.name)) {return};
             return (<Line
               dataKey={`infected.${id}`}
