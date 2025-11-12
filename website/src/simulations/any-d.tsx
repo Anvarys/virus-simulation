@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import type { AnyDimensionalSimulationParams, ChartDataElement} from './utlis';
+import type { AnyDimensionalSimulationParams, ChartDataElement, Virus} from './utlis';
 import { type ChartConfig, ChartContainer } from "@/components/ui/chart" 
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -40,15 +40,22 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
   const initialPropsRef = useRef({
     gridSize,
     initialInfected,
-    infectionChance,
-    recoveryDuration,
-    mortalityChance,
-    immunityDuration,
     total: Math.pow(gridSize, dimensions),
     dimensions
   });
 
-  const cellStates = 3;
+  const virusesRef = useRef<Virus[]>([
+          {
+              infectionChance: infectionChance,
+              recoveryDuration: recoveryDuration,
+              mortalityChance: mortalityChance,
+              immunityDuration: immunityDuration,
+              color: getComputedStyle(document.documentElement).getPropertyValue("--infected").trim(),
+              name: "52"
+          } satisfies Virus
+      ]);
+
+  const cellStates = 4;
   const maxChartData = 500;
 
   const gridRef = useRef<Int16Array>(new Int16Array(initialPropsRef.current.total*cellStates));
@@ -60,28 +67,37 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
   const chartDataRef = useRef<ChartDataElement[]>([]);
   
   const chartSettingsRef = useRef<string[]>(
-    JSON.parse(localStorage.getItem("chartSettings") || '["infected","dead","healthy"]')
+    JSON.parse(localStorage.getItem("chartSettings") || JSON.stringify([...virusesRef.current.map((virus) => {virus.name}), "healthy","dead"]))
   )
 
   const [updateChartLines, setUpdateChartLines] = useState(0);
 
-  function get_infection_chance(id: number, frame: number) {
+  const dirs = [[-1, 1], [1, -1]]
+
+  function get_infected(id: number, frame: number) {
     const grid = gridRef.current;
     const props = initialPropsRef.current;
-    if (!grid) return 0;
-    
-    let infected_neighbors = 0;
-    for (let dim = 0; dim < dimensions; dim++) {
-      for (let dir of [-1, 1]) {
-        const n_id = id + dir * Math.pow(props.gridSize, dim);
-        if (n_id < 0 || n_id >= props.total) continue;
+    const viruses = virusesRef.current;
 
-        if (grid[n_id*cellStates] >= frame) {
-          infected_neighbors += 1;
+    const dimDir = ( Math.random() * 2 | 0 )
+    for (let _dim = 0; _dim < dimensions; _dim++) {
+        const dim = dimDir ? _dim : dimensions - _dim;
+        for (let dir of dirs[Math.random() * 2 | 0]) {
+            const n_id = id + dir * Math.pow(props.gridSize, dim);
+            if (n_id < 0 || n_id >= props.total) continue;
+            if (grid[n_id*cellStates] >= frame) {
+                const virus = viruses[grid[n_id*cellStates+3]];
+                if (Math.random() < virus.infectionChance) {
+                    grid[id*cellStates] = frame + virus.recoveryDuration;
+                    grid[id*cellStates + 1] = frame + virus.recoveryDuration + virus.immunityDuration;
+                    grid[id*cellStates + 3] = grid[n_id*cellStates+3]
+                    return true;
+                }
+            }
         }
-      }
     }
-    return 1 - Math.pow(1 - props.infectionChance, infected_neighbors);
+
+    return false;
   }
 
   function addChartData(chartDataElement: ChartDataElement) {
@@ -95,11 +111,15 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
       gridRef.current[i*cellStates] = -1; // infected until
       gridRef.current[i*cellStates + 1] = -1; // immune until
       gridRef.current[i*cellStates + 2] = 0; // is dead
+      gridRef.current[i*cellStates + 3] = -1; // current virus id
     }
 
-    for (let i = 0; i < props.initialInfected; i++) {
-      const id = Math.floor(Math.random() * props.total);
-      gridRef.current[id*cellStates] = props.recoveryDuration;
+    for (const [vid, virus] of virusesRef.current.entries()) {
+      for (let i = 0; i < props.initialInfected; i++) {
+        const id = Math.floor(Math.random() * props.total);
+        gridRef.current[id*cellStates] = virus.recoveryDuration;
+        gridRef.current[id*cellStates + 3] = vid
+      }
     }
 
     deadCountRef.current = 0;
@@ -123,23 +143,23 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
       let infected = 0;
       const frame = frameRef.current
 
+      const viruses = virusesRef.current
       for (let i = 0; i < props.total; i++) {
         if (grid[i*cellStates+2] === 1) continue;
         if (grid[i*cellStates] >= frame) {
-          if (Math.random() < props.mortalityChance) {
+          if (Math.random() < viruses[grid[i*cellStates+3]].mortalityChance) {
             grid[i*cellStates+2] = 1;
             deadCountRef.current += 1;
             continue;
           }
           infected += 1;
-          continue
+          continue;
         }
-        if (grid[i*cellStates] < frame && grid[i*cellStates+1] < frame && Math.random() < get_infection_chance(i, frame)) {
-          grid[i*cellStates] = frame + props.recoveryDuration;
-          grid[i*cellStates + 1] = frame + props.recoveryDuration + props.immunityDuration;
-          infected += 1;
+        if (grid[i*cellStates] < frame && grid[i*cellStates+1] < frame && get_infected(i, frameRef.current)) {
+          infected += 1
         }
       }
+      
 
       setInfectedCount(infected);
       setDeadCount(deadCountRef.current);
@@ -297,7 +317,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
             isAnimationActive={false}
           />
           }
-          { chartSettingsRef.current.includes("infected") &&
+          { virusesRef.current.map(() => {
           <Line
             dataKey="infected"
             type="monotone"
@@ -306,7 +326,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
             dot={false}
             isAnimationActive={false}
           />
-          }
+          })}
           { chartSettingsRef.current.includes("healthy") &&
           <Line
             dataKey="healthy"
