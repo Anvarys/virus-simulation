@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import type { AnyDimensionalSimulationParams, ChartDataElement, Virus} from './utlis';
+import type { AnyDimensionalSimulationParams, ChartDataElement, Virus} from '@/utlis';
 import { type ChartConfig, ChartContainer } from "@/components/ui/chart" 
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';

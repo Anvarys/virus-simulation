@@ -45,3 +45,13 @@ export const rgbToHex = ({ r, g, b }: RGB): string => {
   const toHex = (n: number) => n.toString(16).padStart(2, "0").toUpperCase();
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
+
+export interface VirusEditorParams {
+    virusesRef: React.RefObject<Virus[]>;
+    isOpen: boolean;
+    setIsOpen: (value: boolean) => void;
+}
+
+export interface VirusCardParams {
+    virus: Virus;
+}

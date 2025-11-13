@@ -13,7 +13,8 @@ import SimulationAnyD from '@/simulations/any-d';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Simulation3D from '@/simulations/3d';
-import type { Virus } from './simulations/utlis';
+import type { Virus } from './utlis';
+import VirusEditor from './viruses/virus-editor';
 
 function App() {
   const defaultSettings = {
@@ -67,6 +68,8 @@ function App() {
     return dimensions;
   });
 
+  const [isVirusEditorOpen, setIsVirusEditorOpen] = React.useState(false)
+
   const infoRef = React.useRef<HTMLDivElement | null>(null);
   const [statsIsRow, setStatsIsRow] = React.useState(false);
 
@@ -95,6 +98,8 @@ function App() {
   const virusesRef = React.useRef<Virus[]>([])
 
   const [isLauched, setIsLaunched] = React.useState(true);
+
+  const [virusEditorKey, setVirusEditorKey] = React.useState(0);
 
   React.useEffect(() => {
     if (simulationType !== "") {
@@ -168,6 +173,12 @@ function App() {
     setIsLaunched(true);
   }
 
+  const resetVirusEditor = () => {
+    setVirusEditorKey(virusEditorKey+1)
+  }
+
+
+
   const handleResize = () => {
     const infoElement = infoRef.current;
     if (infoElement) {
@@ -186,6 +197,10 @@ function App() {
   React.useEffect(() => {
     handleResize();
   }, []);
+
+  React.useEffect(() => {
+    resetVirusEditor();
+  }, [virusesRef])
 
   React.useEffect(() => {
     if (simulationType == "2d")
@@ -475,7 +490,7 @@ function App() {
                     </TooltipContent>
                   </Tooltip>
                 </Label>
-                <span className="text-sm text-violet-300">{opacity}</span>
+                <span className="text-sm text-violet-300">{opacity}%</span>
               </div>
               <Slider
                 value={[opacity]}
@@ -501,7 +516,7 @@ function App() {
                     </TooltipContent>
                   </Tooltip>
                 </Label>
-                <span className="text-sm text-violet-300">{cubeSize}</span>
+                <span className="text-sm text-violet-300">{cubeSize}%</span>
               </div>
               <Slider
                 value={[cubeSize]}
@@ -547,7 +562,14 @@ function App() {
               Restart simulation
             </Button>
             }
-            
+            { false && // WIP
+            <Button 
+              onClick={() => {setIsVirusEditorOpen(true)}}
+              className="bg-orange-800 border-orange-700 border hover:bg-orange-700 hover:border-orange-600"
+            >
+              Open editor
+            </Button>
+            }
           </div>
 
         {/* Info Panel */}
@@ -595,6 +617,12 @@ function App() {
         }
         </div>
       </div>
+      <VirusEditor 
+          key={virusEditorKey}
+          virusesRef={virusesRef}
+          isOpen={isVirusEditorOpen}
+          setIsOpen={setIsVirusEditorOpen}
+        />
     </div>
   )
 }

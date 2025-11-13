@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, type JSX } from 'react';
-import type {BasicSimulationParams, Virus} from './utlis';
+import type {BasicSimulationParams, Virus} from '@/utlis';
 import { Canvas } from '@react-three/fiber';
 import { OrthographicCamera } from "@react-three/drei";
 
