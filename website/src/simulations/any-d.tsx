@@ -200,7 +200,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
     <div className='w-full h-full p-8 pl-2 flex flex-col'>
       <ToggleGroup type='multiple' variant="outline" spacing={2} size="sm"
         value={chartSettingsRef.current} onValueChange={handleGroupToggleValueChange}
-        className='h-min ml-10 mb-3'
+        className='h-min ml-10 mb-3 flex flex-wrap'
         >
           <div className='mr-2 flex flex-row space-x-2'>
             <Tooltip>
@@ -258,7 +258,8 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
           Healthy
         </ToggleGroupItem>
       </ToggleGroup>
-      <ChartContainer className='p-2 h-[50%]' config={chartConfig}>
+      <div className='flex flex-col flex-1 w-full h-full min-h-0'>
+      <ChartContainer className='p-2 w-full flex-1 min-h-0' config={chartConfig}>
         <LineChart
         key={frameRef.current+updateChartLines}
         accessibilityLayer
@@ -320,7 +321,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
           }
         </LineChart>
       </ChartContainer>
-      <ChartContainer className='p-2 h-[calc(50%-2rem)]' config={chartConfig}>
+      <ChartContainer className='p-2 w-full flex-1 min-h-0' config={chartConfig}>
         <LineChart
         key={frameRef.current+updateChartLines}
         accessibilityLayer
@@ -382,6 +383,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
           }
         </LineChart>
       </ChartContainer>
+      </div>
     </div>
   );
 }
