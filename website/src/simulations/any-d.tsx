@@ -28,10 +28,7 @@ const chartConfig = {
 const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
   gridSize, 
   initialInfected, 
-  infectionChance, 
-  recoveryDuration, 
-  mortalityChance, 
-  immunityDuration,
+  viruses,
   setInfectedCount,
   setDeadCount, 
   setFrameCount,
@@ -46,16 +43,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
     dimensions
   });
 
-  const virusesRef = useRef<Virus[]>([
-    {
-      infectionChance: infectionChance,
-      recoveryDuration: recoveryDuration,
-      mortalityChance: mortalityChance,
-      immunityDuration: immunityDuration,
-      color: getComputedStyle(document.documentElement).getPropertyValue("--infected").trim(),
-      name: "Main virus"
-    } satisfies Virus
-  ]);
+  const virusesRef = useRef<Virus[]>(viruses);
 
   const cellStates = 4;
   const maxChartData = 500;

@@ -7,10 +7,7 @@ import { OrbitControls, OrthographicCamera } from "@react-three/drei";
 const Simulation3D: React.FC<ThreeDimensionalSimulationParams> = ({
   gridSize, 
   initialInfected, 
-  infectionChance, 
-  recoveryDuration, 
-  mortalityChance, 
-  immunityDuration,
+  viruses,
   setInfectedCount,
   setDeadCount, 
   setFrameCount,
@@ -27,16 +24,7 @@ const Simulation3D: React.FC<ThreeDimensionalSimulationParams> = ({
     total: Math.pow(gridSize, dimensions)
   });
 
-  const virusesRef = useRef<Virus[]>([
-      {
-        infectionChance: infectionChance,
-        recoveryDuration: recoveryDuration,
-        mortalityChance: mortalityChance,
-        immunityDuration: immunityDuration,
-        color: getComputedStyle(document.documentElement).getPropertyValue("--infected").trim(),
-        name: "52"
-      } satisfies Virus,
-    ]);
+  const virusesRef = useRef<Virus[]>(viruses);
 
   const cellStates = 4;
 

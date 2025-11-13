@@ -13,6 +13,7 @@ import SimulationAnyD from '@/simulations/any-d';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Simulation3D from '@/simulations/3d';
+import type { Virus } from './simulations/utlis';
 
 function App() {
   const defaultSettings = {
@@ -91,6 +92,8 @@ function App() {
   const [infectedCount, setInfectedCount] = React.useState(0);
   const [frameCount, setFrameCount] = React.useState(0);
 
+  const virusesRef = React.useRef<Virus[]>([])
+
   const [isLauched, setIsLaunched] = React.useState(true);
 
   React.useEffect(() => {
@@ -102,6 +105,16 @@ function App() {
   const handleReset = () => {
     setGridSizeUnchanged(gridSize);
     setDimensionsUnchanged(dimensions);
+
+    virusesRef.current = [{
+      infectionChance: infectionChance / 100,
+      recoveryDuration: recoveryDuration,
+      mortalityChance: mortalityChance / 100,
+      immunityDuration: immunityDuration,
+      color: getComputedStyle(document.documentElement).getPropertyValue("--infected").trim(),
+      name: "VIRUS52"
+    } satisfies Virus]
+
     setResetKey(prev => prev + 1);
   };
 
@@ -151,6 +164,7 @@ function App() {
   }
   
   const handleLaunch = () => {
+    handleReset();
     setIsLaunched(true);
   }
 
@@ -209,10 +223,7 @@ function App() {
               key={resetKey}
               gridSize={gridSize}
               initialInfected={initialInfected} 
-              infectionChance={infectionChance / 100}
-              immunityDuration={immunityDuration} 
-              recoveryDuration={recoveryDuration} 
-              mortalityChance={mortalityChance / 100} 
+              viruses={virusesRef.current}
               setInfectedCount={setInfectedCount}
               setDeadCount={setDeadCount}
               setFrameCount={setFrameCount}
@@ -225,10 +236,7 @@ function App() {
               key={resetKey}
               gridSize={gridSize}
               initialInfected={initialInfected} 
-              infectionChance={infectionChance / 100}
-              immunityDuration={immunityDuration} 
-              recoveryDuration={recoveryDuration} 
-              mortalityChance={mortalityChance / 100} 
+              viruses={virusesRef.current}
               setInfectedCount={setInfectedCount}
               setDeadCount={setDeadCount}
               setFrameCount={setFrameCount}
@@ -243,10 +251,7 @@ function App() {
               key={resetKey}
               gridSize={gridSize}
               initialInfected={initialInfected} 
-              infectionChance={infectionChance / 100}
-              immunityDuration={immunityDuration} 
-              recoveryDuration={recoveryDuration} 
-              mortalityChance={mortalityChance / 100} 
+              viruses={virusesRef.current}
               setInfectedCount={setInfectedCount}
               setDeadCount={setDeadCount}
               setFrameCount={setFrameCount}

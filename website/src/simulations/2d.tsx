@@ -7,10 +7,7 @@ import { OrthographicCamera } from "@react-three/drei";
 const Simulation2D: React.FC<BasicSimulationParams> = ({
   gridSize, 
   initialInfected, 
-  infectionChance, 
-  recoveryDuration, 
-  mortalityChance, 
-  immunityDuration,
+  viruses,
   setInfectedCount,
   setDeadCount,
   setFrameCount,
@@ -25,16 +22,7 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     total: Math.pow(gridSize, dimensions)
   });
 
-  const virusesRef = useRef<Virus[]>([
-    {
-      infectionChance: infectionChance,
-      recoveryDuration: recoveryDuration,
-      mortalityChance: mortalityChance,
-      immunityDuration: immunityDuration,
-      color: getComputedStyle(document.documentElement).getPropertyValue("--infected").trim(),
-      name: "52"
-    } satisfies Virus
-  ]);
+  const virusesRef = useRef<Virus[]>(viruses);
 
   const cellStates = 4;
 
