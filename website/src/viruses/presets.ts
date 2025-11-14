@@ -11,7 +11,7 @@ export const virusPresets = {
     } satisfies Virus,
     "default": {
         infectionChance: 0.2,
-        mortalityChance: 0.02,
+        mortalityChance: 0.002,
         recoveryDuration: 10,
         immunityDuration: 4,
         name: "Default",

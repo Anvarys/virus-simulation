@@ -2,7 +2,7 @@ import { Dialog, DialogContent} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { rgbToHex, saveVirusesToLocal, type Virus, type VirusCardParams, type VirusEditorParams } from "@/utlis";
 import React, { type CSSProperties } from "react";
-import { faPen, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faPen, faPlus, faTrash, faDice } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import InfoIcon from "@/components/icons/InfoIcon";
@@ -33,8 +33,8 @@ const VirusCard: React.FC<VirusCardParams> = ({virus, id, editFunc, deleteFunc})
   return (
     <div className={`group bg-[var(--virus-color)]/20 w-[10dvw] h-[10dvw] rounded-[1dvh] border border-[var(--virus-color)]/50 flex flex-col items-center p-1 space-y-1 text-neutral-100`} style={{"--virus-color": virus.color} as CSSProperties}>
       <Label className="text-neutral-100 whitespace-normal mb-2">{virus.name}</Label>
-      <div className="flex flex-row w-full justify-between"><Label className="text-xs">Infection %: </Label><span className="text-xs text-violet-300">{virus.infectionChance*100}%</span></div>
-      <div className="flex flex-row w-full justify-between"><Label className="text-xs">Mortality %: </Label><span className="text-xs text-violet-300">{virus.mortalityChance*100}%</span></div>
+      <div className="flex flex-row w-full justify-between"><Label className="text-xs">Infection %: </Label><span className="text-xs text-violet-300">{(virus.infectionChance*100).toFixed(2)}%</span></div>
+      <div className="flex flex-row w-full justify-between"><Label className="text-xs">Mortality %: </Label><span className="text-xs text-violet-300">{(virus.mortalityChance*100).toFixed(2)}%</span></div>
       <div className="flex flex-row w-full justify-between"><Label className="text-xs">Recovery d: </Label><span className="text-xs text-violet-300">{virus.recoveryDuration}</span></div>
       <div className="flex flex-row w-full justify-between"><Label className="text-xs">Immunity d: </Label><span className="text-xs text-violet-300">{virus.immunityDuration}</span></div>
       <div className="flex flex-row gap-2">
@@ -62,8 +62,8 @@ const VirusEditor: React.FC<VirusEditorParams> = ({
     setCurrentlyEditingId(id)
     setCurrentlyEditingVirus({
       ...virusesRef.current[id],
-      infectionChance: Math.round(virusesRef.current[id].infectionChance * 10000) / 100,
-      mortalityChance: Math.round(virusesRef.current[id].mortalityChance * 10000) / 100
+      infectionChance: parseFloat((virusesRef.current[id].infectionChance * 100).toFixed(2)),
+      mortalityChance: parseFloat((virusesRef.current[id].mortalityChance * 100).toFixed(2))
     } satisfies Virus)
     setEditVirusOpen(true)
   }
@@ -95,8 +95,21 @@ const VirusEditor: React.FC<VirusEditorParams> = ({
       name: generateVirusName(),
       color: generateColor()
     } satisfies Virus)
-
+    saveVirusesToLocal(virusesRef.current)
     editVirus(virusesRef.current.length-1)
+  }
+
+  const addRandom = () => {
+    virusesRef.current.push({
+      infectionChance: parseFloat(Math.random().toFixed(4)),
+      mortalityChance: parseFloat((Math.random()/100).toFixed(4)),
+      recoveryDuration: Math.round(Math.random()*10)+10,
+      immunityDuration: Math.round(Math.random()*10),
+      name: generateVirusName(),
+      color: generateColor()
+    } satisfies Virus)
+    saveVirusesToLocal(virusesRef.current)
+    setUpdateKey(updateKey+1)
   }
 
   return (
@@ -115,8 +128,13 @@ const VirusEditor: React.FC<VirusEditorParams> = ({
       </div>
 
       </div>
-      <div onClick={addNew} className="w-12 h-12 bg-violet-500 bottom-5 sticky self-end rounded-full ring-ring/50 transition-[box-shadow] shadow-sm hover:ring-4 cursor-pointer flex justify-center items-center ml-auto">
-        <FontAwesomeIcon icon={faPlus} color="white" size="xl"/>
+      <div className="bottom-5 sticky self-end space-y-2">
+        <div onClick={addRandom} className="w-12 h-12 bg-violet-500 rounded-full ring-ring/50 transition-[box-shadow] shadow-sm hover:ring-4 cursor-pointer flex justify-center items-center ml-auto">
+          <FontAwesomeIcon icon={faDice} color="white" size="xl"/>
+        </div>
+        <div onClick={addNew} className="w-12 h-12 bg-violet-500 rounded-full ring-ring/50 transition-[box-shadow] shadow-sm hover:ring-4 cursor-pointer flex justify-center items-center ml-auto">
+          <FontAwesomeIcon icon={faPlus} color="white" size="xl"/>
+        </div>
       </div>
       </DialogContent>
       </Dialog>
