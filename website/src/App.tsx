@@ -111,6 +111,7 @@ function App() {
     setGridSizeUnchanged(gridSize);
     setDimensionsUnchanged(dimensions);
 
+    if (!virusesRef.current){
     virusesRef.current = [{
       infectionChance: infectionChance / 100,
       recoveryDuration: recoveryDuration,
@@ -119,6 +120,7 @@ function App() {
       color: getComputedStyle(document.documentElement).getPropertyValue("--infected").trim(),
       name: "VIRUS52"
     } satisfies Virus]
+    }
 
     setResetKey(prev => prev + 1);
   };
@@ -562,7 +564,7 @@ function App() {
               Restart simulation
             </Button>
             }
-            { false && // WIP
+            { true && // WIP
             <Button 
               onClick={() => {setIsVirusEditorOpen(true)}}
               className="bg-orange-800 border-orange-700 border hover:bg-orange-700 hover:border-orange-600"

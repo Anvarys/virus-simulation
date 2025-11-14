@@ -1,9 +1,13 @@
 import { Dialog, DialogContent} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import type { VirusCardParams, VirusEditorParams } from "@/utlis";
+import type { Virus, VirusCardParams, VirusEditorParams } from "@/utlis";
 import React, { type CSSProperties } from "react";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import InfoIcon from "@/components/icons/InfoIcon";
+import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
 
 const VirusCard: React.FC<VirusCardParams> = ({virus, id, onClick}) => {
   return (
@@ -27,12 +31,33 @@ const VirusEditor: React.FC<VirusEditorParams> = ({
   virusesRef
 
   const [editVirusOpen, setEditVirusOpen] = React.useState(false);
-  const [currentlyEditing, setCurrentlyEditing] = React.useState(-1);
+  const [currentlyEditingId, setCurrentlyEditingId] = React.useState(-1);
+  const [currentlyEditingVirus, setCurrentlyEditingVirus] = React.useState<Virus | undefined>(undefined);
+  const [updateKey, setUpdateKey] = React.useState(0);
 
   const editVirus = (id: number) => {
-    setCurrentlyEditing(id)
+    setCurrentlyEditingId(id)
+    setCurrentlyEditingVirus({
+      ...virusesRef.current[id],
+      infectionChance: Math.round(virusesRef.current[id].infectionChance * 10000) / 100,
+      mortalityChance: Math.round(virusesRef.current[id].mortalityChance * 10000) / 100
+    } satisfies Virus)
     setEditVirusOpen(true)
   }
+
+  const saveVirus = () => {
+    if (!currentlyEditingVirus) {return}
+
+    virusesRef.current[currentlyEditingId] = {
+      ...currentlyEditingVirus,
+      infectionChance: currentlyEditingVirus.infectionChance / 100,
+      mortalityChance: currentlyEditingVirus.mortalityChance / 100
+    }
+
+    setEditVirusOpen(false)
+    setUpdateKey(updateKey+1)
+  }
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -42,7 +67,7 @@ const VirusEditor: React.FC<VirusEditorParams> = ({
     
       <Label className="text-xl text-neutral-100">Your viruses</Label>
 
-      <div className="flex flex-grow mt-4 mb-4">
+      <div className="flex flex-grow mt-4 mb-4" key={updateKey}>
         { virusesRef.current.map((virus, id) =>
         <VirusCard virus={virus} id={id} onClick={editVirus}/>)
         }
@@ -51,17 +76,118 @@ const VirusEditor: React.FC<VirusEditorParams> = ({
       </div>
       </DialogContent>
       </Dialog>
-      { currentlyEditing != -1 &&
+      { currentlyEditingId != -1 && currentlyEditingVirus &&
       <Dialog open={editVirusOpen} onOpenChange={setEditVirusOpen}>
-        <DialogContent className="bg-neutral-800 border-neutral-700 w-min p-10">
-        <div className="flex flex-col w-full items-center">
+        <DialogContent className="bg-neutral-800 border-neutral-700 w-min p-6">
+        <div className="flex flex-col w-full items-center text-neutral-100">
       
-        <Label className="text-xl text-neutral-100 mb-4 whitespace-nowrap">Editing a virus</Label>
+        <Label className="text-xl mb-4 whitespace-nowrap">Editing a virus</Label>
 
-        <div className="flex flex-col w-full">
+        <div className="flex flex-col w-full space-y-5">
+          <div className="space-y-2">
+              <div className='flex items-center justify-between'>
+                <Label className="min-w-[9rem]">
+                  Infection chance
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon color="white" width='1rem' height='1rem'/>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className='text-center'>Chance that a human will<br/>infect his neighbors each<br/>unit of time</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </Label>
+                <span className="text-sm text-violet-300 min-w-[3rem] text-right">{currentlyEditingVirus.infectionChance}%</span>
+              </div>
+              <Slider
+                value={[currentlyEditingVirus.infectionChance]}
+                onValueChange={([value]) => {setCurrentlyEditingVirus({...currentlyEditingVirus, infectionChance: value})}}
+                min={0.2}
+                max={100}
+                step={0.2}
+                className="w-full"
+              />
+            </div>
 
+            <div className="space-y-2">
+              <div className='flex items-center justify-between'>
+                <div className='flex flex-row items-left'>
+                  <Label className="pr-2 min-w-[7.4rem]">Mortality chance</Label>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon color="white" width='1rem' height='1rem'/>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className='text-center'>Chance that a human will<br/>die each unit of time<br/>when he is infected</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <span className="text-sm text-violet-300 text-right min-w-[3rem]">{currentlyEditingVirus.mortalityChance}%</span>
+              </div>
+              <Slider
+                value={[currentlyEditingVirus.mortalityChance]}
+                onValueChange={([value]) => {setCurrentlyEditingVirus({...currentlyEditingVirus, mortalityChance: value})}}
+                min={0}
+                max={10}
+                step={0.02}
+                className="w-full"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className='flex items-center justify-between'>
+                <Label>
+                  Recovery duration
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon color="white" width='1rem' height='1rem'/>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className='text-center'>Amount of units of time<br/>after which human will<br/>become healthy after<br/>getting infected</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </Label>
+                <span className="text-sm text-violet-300">{currentlyEditingVirus.recoveryDuration}</span>
+              </div>
+              <Slider
+                value={[currentlyEditingVirus.recoveryDuration]}
+                onValueChange={([value]) => {setCurrentlyEditingVirus({...currentlyEditingVirus, recoveryDuration: value})}}
+                min={1}
+                max={50}
+                step={1}
+                className="w-full"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className='flex items-center justify-between'>
+                <Label>
+                  Immunity duration
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon color="white" width='1rem' height='1rem'/>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className='text-center'>Amount of units of time<br/>that human will be immune for<br/>after healing from an infection</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </Label>
+                <span className="text-sm text-violet-300">{currentlyEditingVirus.immunityDuration}</span>
+              </div>
+              <Slider
+                value={[currentlyEditingVirus.immunityDuration]}
+                onValueChange={([value]) => {setCurrentlyEditingVirus({...currentlyEditingVirus, immunityDuration: value})}}
+                min={0}
+                max={50}
+                step={1}
+                className="w-full"
+              />
+            </div>
         </div>
-
+        <div className="space-x-2">
+          <Button className="mt-8" variant="secondary" onClick={() => {setEditVirusOpen(false)}}>Cancel</Button>
+          <Button className="mt-8" onClick={saveVirus}>Save</Button>
+        </div>
         </div>
         </DialogContent>
       </Dialog>
