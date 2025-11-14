@@ -1,8 +1,8 @@
 import { Dialog, DialogContent} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import type { Virus, VirusCardParams, VirusEditorParams } from "@/utlis";
+import { rgbToHex, type Virus, type VirusCardParams, type VirusEditorParams } from "@/utlis";
 import React, { type CSSProperties } from "react";
-import { faPen } from "@fortawesome/free-solid-svg-icons";
+import { faPen, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import InfoIcon from "@/components/icons/InfoIcon";
@@ -10,6 +10,24 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { virusPresets } from "./presets";
+
+
+function generateVirusName() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let result = "";
+  for (let i = 0; i < 3; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  result += Math.floor(Math.random()*10);
+  result += Math.floor(Math.random()*10);
+  return result;
+}
+
+function generateColor() {
+  return rgbToHex(Math.floor(Math.random()*256), Math.floor(Math.random()*256), Math.floor(Math.random()*256))
+}
+
 
 const VirusCard: React.FC<VirusCardParams> = ({virus, id, onClick}) => {
   return (
@@ -19,7 +37,7 @@ const VirusCard: React.FC<VirusCardParams> = ({virus, id, onClick}) => {
       <div className="flex flex-row w-full justify-between"><Label className="text-xs">Mortality %: </Label><span className="text-xs text-violet-300">{virus.mortalityChance*100}%</span></div>
       <div className="flex flex-row w-full justify-between"><Label className="text-xs">Recovery d: </Label><span className="text-xs text-violet-300">{virus.recoveryDuration}</span></div>
       <div className="flex flex-row w-full justify-between"><Label className="text-xs">Immunity d: </Label><span className="text-xs text-violet-300">{virus.immunityDuration}</span></div>
-      <Label className="text-neutral-300 hidden group-hover:block space-y-1 mt-1 hover:cursor-pointer hover:text-neutral-100" onClick={() => {onClick(id)}}><FontAwesomeIcon icon={faPen} size="xs"/> Edit</Label>
+      <Label className="text-neutral-300 hidden group-hover:block space-y-1 mt-1 cursor-pointer hover:text-neutral-100" onClick={() => {onClick(id)}}><FontAwesomeIcon icon={faPen} size="xs"/> Edit</Label>
     </div>
   )
 }
@@ -60,21 +78,34 @@ const VirusEditor: React.FC<VirusEditorParams> = ({
     setUpdateKey(updateKey+1)
   }
 
+  const addNew = () => {
+    virusesRef.current.push({
+      ...virusPresets.default,
+      name: generateVirusName(),
+      color: generateColor()
+    } satisfies Virus)
+
+    editVirus(virusesRef.current.length-1)
+  }
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="min-w-[80%] max-w-[80%] min-h-[80%] max-h-[80%]
-      bg-neutral-900 border-neutral-800">
+      bg-neutral-900 border-neutral-800 overflow-auto">
       <div className="flex flex-col">
     
       <Label className="text-xl text-neutral-100">Your viruses</Label>
 
-      <div className="flex flex-grow mt-4 mb-4" key={updateKey}>
+      <div className="flex flex-grow mt-4 mb-4 gap-4 flex-wrap items-start content-start" key={updateKey}>
         { virusesRef.current.map((virus, id) =>
         <VirusCard virus={virus} id={id} onClick={editVirus}/>)
         }
       </div>
 
+      </div>
+      <div onClick={addNew} className="w-12 h-12 bg-violet-500 bottom-5 sticky self-end rounded-full ring-ring/50 transition-[box-shadow] shadow-sm hover:ring-4 cursor-pointer flex justify-center items-center ml-auto">
+        <FontAwesomeIcon icon={faPlus} color="white" size="xl"/>
       </div>
       </DialogContent>
       </Dialog>
@@ -82,8 +113,6 @@ const VirusEditor: React.FC<VirusEditorParams> = ({
       <Dialog open={editVirusOpen} onOpenChange={setEditVirusOpen}>
         <DialogContent className="bg-neutral-800 border-neutral-700 w-min p-6">
         <div className="flex flex-col w-full items-center text-neutral-100">
-      
-        <Label className="text-xl mb-4 whitespace-nowrap">Editing a virus</Label>
 
         <div className="flex flex-col w-full space-y-5">
           <Field>

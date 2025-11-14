@@ -8,5 +8,13 @@ export const virusPresets = {
         recoveryDuration: 7,
         name: "Fatal",
         color: "#ff0000"
-    } satisfies Virus
+    } satisfies Virus,
+    "default": {
+        infectionChance: 0.2,
+        mortalityChance: 0.02,
+        recoveryDuration: 10,
+        immunityDuration: 4,
+        name: "Default",
+        color: "#00b000"
+    }
 }

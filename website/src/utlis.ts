@@ -35,13 +35,7 @@ export type Virus = {
     name: string;
 }
 
-type RGB = {
-  r: number;
-  g: number;
-  b: number;
-};
-
-export const rgbToHex = ({ r, g, b }: RGB): string => {
+export const rgbToHex = (r: number, g: number, b: number): string => {
   const toHex = (n: number) => n.toString(16).padStart(2, "0").toUpperCase();
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
