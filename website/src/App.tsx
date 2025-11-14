@@ -564,7 +564,7 @@ function App() {
               Restart simulation
             </Button>
             }
-            { true && // WIP
+            { false && // WIP
             <Button 
               onClick={() => {setIsVirusEditorOpen(true)}}
               className="bg-orange-800 border-orange-700 border hover:bg-orange-700 hover:border-orange-600"
