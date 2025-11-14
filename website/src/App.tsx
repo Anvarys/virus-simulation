@@ -115,16 +115,6 @@ function App() {
     setGridSizeUnchanged(gridSize);
     setDimensionsUnchanged(dimensions);
 
-    if (!advancedMode){
-    virusesRef.current = [{
-      infectionChance: infectionChance / 100,
-      recoveryDuration: recoveryDuration,
-      mortalityChance: mortalityChance / 100,
-      immunityDuration: immunityDuration,
-      color: getComputedStyle(document.documentElement).getPropertyValue("--infected").trim(),
-      name: "VIRUS52"
-    } satisfies Virus]
-    }
     setResetKey(prev => prev + 1);
   };
 
@@ -243,7 +233,14 @@ function App() {
               key={resetKey}
               gridSize={gridSize}
               initialInfected={initialInfected} 
-              viruses={virusesRef.current}
+              viruses={advancedMode ? virusesRef.current : [{
+                  infectionChance: infectionChance / 100,
+                  recoveryDuration: recoveryDuration,
+                  mortalityChance: mortalityChance / 100,
+                  immunityDuration: immunityDuration,
+                  color: getComputedStyle(document.documentElement).getPropertyValue("--infected").trim(),
+                  name: "VIRUS52"
+                } satisfies Virus]}
               setInfectedCount={setInfectedCount}
               setDeadCount={setDeadCount}
               setFrameCount={setFrameCount}
@@ -256,7 +253,14 @@ function App() {
               key={resetKey}
               gridSize={gridSize}
               initialInfected={initialInfected} 
-              viruses={virusesRef.current}
+              viruses={advancedMode ? virusesRef.current : [{
+                  infectionChance: infectionChance / 100,
+                  recoveryDuration: recoveryDuration,
+                  mortalityChance: mortalityChance / 100,
+                  immunityDuration: immunityDuration,
+                  color: getComputedStyle(document.documentElement).getPropertyValue("--infected").trim(),
+                  name: "VIRUS52"
+                } satisfies Virus]}
               setInfectedCount={setInfectedCount}
               setDeadCount={setDeadCount}
               setFrameCount={setFrameCount}
@@ -271,7 +275,14 @@ function App() {
               key={resetKey}
               gridSize={gridSize}
               initialInfected={initialInfected} 
-              viruses={virusesRef.current}
+              viruses={advancedMode ? virusesRef.current : [{
+                  infectionChance: infectionChance / 100,
+                  recoveryDuration: recoveryDuration,
+                  mortalityChance: mortalityChance / 100,
+                  immunityDuration: immunityDuration,
+                  color: getComputedStyle(document.documentElement).getPropertyValue("--infected").trim(),
+                  name: "VIRUS52"
+                } satisfies Virus]}
               setInfectedCount={setInfectedCount}
               setDeadCount={setDeadCount}
               setFrameCount={setFrameCount}
