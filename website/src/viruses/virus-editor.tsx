@@ -8,6 +8,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import InfoIcon from "@/components/icons/InfoIcon";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 const VirusCard: React.FC<VirusCardParams> = ({virus, id, onClick}) => {
   return (
@@ -84,6 +86,12 @@ const VirusEditor: React.FC<VirusEditorParams> = ({
         <Label className="text-xl mb-4 whitespace-nowrap">Editing a virus</Label>
 
         <div className="flex flex-col w-full space-y-5">
+          <Field>
+            <FieldLabel>
+              Virus Name
+            </FieldLabel>
+            <Input value={currentlyEditingVirus.name} onInput={(e) => {setCurrentlyEditingVirus({...currentlyEditingVirus, name: e.currentTarget.value} satisfies Virus)}}></Input>
+          </Field>
           <div className="space-y-2">
               <div className='flex items-center justify-between'>
                 <Label className="min-w-[9rem]">
