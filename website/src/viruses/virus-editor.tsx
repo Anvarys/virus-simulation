@@ -1,8 +1,8 @@
 import { Dialog, DialogContent} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { rgbToHex, type Virus, type VirusCardParams, type VirusEditorParams } from "@/utlis";
+import { rgbToHex, saveVirusesToLocal, type Virus, type VirusCardParams, type VirusEditorParams } from "@/utlis";
 import React, { type CSSProperties } from "react";
-import { faPen, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faPen, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import InfoIcon from "@/components/icons/InfoIcon";
@@ -29,7 +29,7 @@ function generateColor() {
 }
 
 
-const VirusCard: React.FC<VirusCardParams> = ({virus, id, onClick}) => {
+const VirusCard: React.FC<VirusCardParams> = ({virus, id, editFunc, deleteFunc}) => {
   return (
     <div className={`group bg-[var(--virus-color)]/20 w-[10dvw] h-[10dvw] rounded-[1dvh] border border-[var(--virus-color)]/50 flex flex-col items-center p-1 space-y-1 text-neutral-100`} style={{"--virus-color": virus.color} as CSSProperties}>
       <Label className="text-neutral-100 whitespace-normal mb-2">{virus.name}</Label>
@@ -37,7 +37,10 @@ const VirusCard: React.FC<VirusCardParams> = ({virus, id, onClick}) => {
       <div className="flex flex-row w-full justify-between"><Label className="text-xs">Mortality %: </Label><span className="text-xs text-violet-300">{virus.mortalityChance*100}%</span></div>
       <div className="flex flex-row w-full justify-between"><Label className="text-xs">Recovery d: </Label><span className="text-xs text-violet-300">{virus.recoveryDuration}</span></div>
       <div className="flex flex-row w-full justify-between"><Label className="text-xs">Immunity d: </Label><span className="text-xs text-violet-300">{virus.immunityDuration}</span></div>
-      <Label className="text-neutral-300 hidden group-hover:block space-y-1 mt-1 cursor-pointer hover:text-neutral-100" onClick={() => {onClick(id)}}><FontAwesomeIcon icon={faPen} size="xs"/> Edit</Label>
+      <div className="flex flex-row gap-2">
+      <Label className="text-neutral-300 hidden group-hover:block space-y-1 mt-1 cursor-pointer hover:text-neutral-100 text-xs" onClick={() => {editFunc(id)}}><FontAwesomeIcon icon={faPen} size="xs"/> Edit</Label>
+      <Label className="text-neutral-300 hidden group-hover:block space-y-1 mt-1 cursor-pointer hover:text-neutral-100 text-xs" onClick={() => {deleteFunc(id)}}><FontAwesomeIcon icon={faTrash} size="xs"/> Delete</Label>
+      </div>
     </div>
   )
 }
@@ -65,6 +68,12 @@ const VirusEditor: React.FC<VirusEditorParams> = ({
     setEditVirusOpen(true)
   }
 
+  const deleteVirus = (id: number) => {
+    virusesRef.current.splice(id, 1)
+    setUpdateKey(updateKey+1)
+    saveVirusesToLocal(virusesRef.current)
+  }
+
   const saveVirus = () => {
     if (!currentlyEditingVirus) {return}
 
@@ -76,6 +85,8 @@ const VirusEditor: React.FC<VirusEditorParams> = ({
 
     setEditVirusOpen(false)
     setUpdateKey(updateKey+1)
+
+    saveVirusesToLocal(virusesRef.current)
   }
 
   const addNew = () => {
@@ -99,7 +110,7 @@ const VirusEditor: React.FC<VirusEditorParams> = ({
 
       <div className="flex flex-grow mt-4 mb-4 gap-4 flex-wrap items-start content-start" key={updateKey}>
         { virusesRef.current.map((virus, id) =>
-        <VirusCard virus={virus} id={id} onClick={editVirus}/>)
+        <VirusCard virus={virus} id={id} editFunc={editVirus} deleteFunc={deleteVirus}/>)
         }
       </div>
 

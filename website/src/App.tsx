@@ -13,7 +13,7 @@ import SimulationAnyD from '@/simulations/any-d';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Simulation3D from '@/simulations/3d';
-import type { Virus } from './utlis';
+import { getVirusesFromLocal, type Virus } from './utlis';
 import VirusEditor from './viruses/virus-editor';
 
 function App() {
@@ -70,12 +70,14 @@ function App() {
 
   const [isVirusEditorOpen, setIsVirusEditorOpen] = React.useState(false)
 
+  const [advancedMode, setAdvancedMode] = React.useState((localStorage.getItem('mode') || "normal") === "advanced");
+
   const infoRef = React.useRef<HTMLDivElement | null>(null);
   const [statsIsRow, setStatsIsRow] = React.useState(false);
 
   const [simulationType, setSimulationType] = React.useState(localStorage.getItem('simulationType') || "");
 
-  const initialInfectedPercentage = 0.1;
+  const initialInfectedPercentage = 0.3;
 
   const totalLimitLog = Math.log(100000);
 
@@ -95,7 +97,9 @@ function App() {
   const [infectedCount, setInfectedCount] = React.useState(0);
   const [frameCount, setFrameCount] = React.useState(0);
 
-  const virusesRef = React.useRef<Virus[]>([])
+  const virusesRef = React.useRef<Virus[]>(
+    getVirusesFromLocal()
+  )
 
   const [isLauched, setIsLaunched] = React.useState(true);
 
@@ -111,7 +115,7 @@ function App() {
     setGridSizeUnchanged(gridSize);
     setDimensionsUnchanged(dimensions);
 
-    if (virusesRef.current.length < 2){
+    if (!advancedMode){
     virusesRef.current = [{
       infectionChance: infectionChance / 100,
       recoveryDuration: recoveryDuration,
@@ -121,7 +125,6 @@ function App() {
       name: "VIRUS52"
     } satisfies Virus]
     }
-
     setResetKey(prev => prev + 1);
   };
 
@@ -136,7 +139,7 @@ function App() {
 
   const handleSetGridSize = (size: number) => {
     setGridSize(size);
-    const initialInfectedlimit = Math.floor(Math.pow(size, dimensions) * initialInfectedPercentage)+1;
+    const initialInfectedlimit = advancedMode ? Math.floor((Math.pow(size, dimensions) * initialInfectedPercentage) / virusesRef.current.length)+1 : Math.floor((Math.pow(size, dimensions) * initialInfectedPercentage))+1
     if (initialInfected > initialInfectedlimit)
     {
       setInitialInfected(initialInfectedlimit);
@@ -225,7 +228,7 @@ function App() {
                 Launch Simulation
               </Button>
             }
-            { simulationType === "" && isLauched &&
+            { simulationType === "" && isLauched && !isVirusEditorOpen &&
               <div className='p-10 flex flex-col space-y-2'>
                 <h1 className='text-2xl text-center'>
                 This site visualises and shows different simulations of virus spreading.
@@ -235,7 +238,7 @@ function App() {
                 <h3 className='mt-10 text-center text-neutral-400 text-x'>Start by choosing a simulation on the right<br/>I suggest starting from 2D</h3>
               </div>
             }
-            { (simulationType === "2d" && isLauched)  &&
+            { (simulationType === "2d" && isLauched && !isVirusEditorOpen)  &&
             <Simulation2D 
               key={resetKey}
               gridSize={gridSize}
@@ -248,7 +251,7 @@ function App() {
             />
             }
 
-            { (simulationType === "3d" && isLauched) &&
+            { (simulationType === "3d" && isLauched && !isVirusEditorOpen) &&
             <Simulation3D 
               key={resetKey}
               gridSize={gridSize}
@@ -263,7 +266,7 @@ function App() {
             />
             }
             
-            { (simulationType === "any-d" && isLauched) &&
+            { (simulationType === "any-d" && isLauched && !isVirusEditorOpen) &&
             <SimulationAnyD 
               key={resetKey}
               gridSize={gridSize}
@@ -363,7 +366,7 @@ function App() {
                       <InfoIcon color="white" width='1rem' height='1rem'/>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p className='text-center'>Amount of randomly placed<br/>infected humans</p>
+                      <p className='text-center'>Amount of randomly placed<br/>infected humans {advancedMode ? "per virus" : ""}</p>
                     </TooltipContent>
                   </Tooltip>
                 </Label>
@@ -373,12 +376,12 @@ function App() {
                 value={[initialInfected]}
                 onValueChange={([value]) => handleSetSettings(setInitialInfected,value)}
                 min={1}
-                max={Math.floor(Math.pow(gridSize, dimensions) * initialInfectedPercentage)+1}
+                max={advancedMode ? Math.floor((Math.pow(gridSize, dimensions) * initialInfectedPercentage) / virusesRef.current.length)+1 : Math.floor((Math.pow(gridSize, dimensions) * initialInfectedPercentage))+1}
                 step={1}
                 className="w-full"
               />
             </div>
-
+            { !advancedMode && <>
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
                 <Label className="min-w-[9rem]">
@@ -478,6 +481,7 @@ function App() {
                 className="w-full"
               />
             </div>
+            </>}
             { simulationType === "3d" &&
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
@@ -544,11 +548,33 @@ function App() {
                   </Tooltip>
               </Label>
             </div>
+            <div className='flex items-center justify-between'>
+              <Checkbox onCheckedChange={(checked: boolean) => {setAdvancedMode(checked); localStorage.setItem("mode", checked ? "advanced" : "normal")}} checked={advancedMode}/>
+              <Label>
+                Advanced Mode
+                <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon color="white" width='1rem' height='1rem'/>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className='text-center'>Allows to create multiple<br/>different viruses</p>
+                    </TooltipContent>
+                  </Tooltip>
+              </Label>
+            </div>
           </div>
 
           <div className="space-y-2 flex flex-col justify-center items-stretch">
             
-
+            { advancedMode && // WIP
+            <Button 
+              onClick={() => {setIsVirusEditorOpen(true)}}
+              className="bg-orange-800 border-orange-700 border hover:bg-orange-700 hover:border-orange-600"
+            >
+              Open virus editor
+            </Button>
+            }
+            <br/>
             <Button 
               onClick={handleResetSettings}
               className="bg-violet-800 border-violet-700 border hover:bg-violet-700 border-violet-600"
@@ -562,14 +588,6 @@ function App() {
               className="bg-cyan-800 border-cyan-700 border hover:bg-cyan-700 hover:border-cyan-600"
             >
               Restart simulation
-            </Button>
-            }
-            { false && // WIP
-            <Button 
-              onClick={() => {setIsVirusEditorOpen(true)}}
-              className="bg-orange-800 border-orange-700 border hover:bg-orange-700 hover:border-orange-600"
-            >
-              Open editor
             </Button>
             }
           </div>

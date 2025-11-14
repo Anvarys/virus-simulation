@@ -1,3 +1,5 @@
+import { virusPresets } from "./viruses/presets";
+
 export interface BasicSimulationParams {
     gridSize: number;
     initialInfected: number;
@@ -49,5 +51,17 @@ export interface VirusEditorParams {
 export interface VirusCardParams {
     virus: Virus;
     id: number;
-    onClick: (id: number) => void;
+    editFunc: (id: number) => void;
+    deleteFunc: (id: number) => void;
+}
+
+
+export function saveVirusesToLocal(viruses: Virus[]) {
+    localStorage.setItem("viruses", JSON.stringify(viruses))
+}
+
+export function getVirusesFromLocal(): Virus[] {
+    const viruses = localStorage.getItem("viruses")
+    if (!viruses || viruses == "") {return [virusPresets.default]}
+    return JSON.parse(viruses) as Virus[]
 }
