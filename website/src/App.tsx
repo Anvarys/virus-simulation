@@ -111,7 +111,7 @@ function App() {
     setGridSizeUnchanged(gridSize);
     setDimensionsUnchanged(dimensions);
 
-    if (virusesRef.current.length < 1){
+    if (virusesRef.current.length < 2){
     virusesRef.current = [{
       infectionChance: infectionChance / 100,
       recoveryDuration: recoveryDuration,
