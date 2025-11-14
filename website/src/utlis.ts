@@ -54,4 +54,6 @@ export interface VirusEditorParams {
 
 export interface VirusCardParams {
     virus: Virus;
+    id: number;
+    onClick: (id: number) => void;
 }

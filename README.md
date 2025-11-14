@@ -1,23 +1,6 @@
-### This project is about creating and visualising simulation models
+### This project is about creating and visualising virus simulation models
 
----
-## Installing and using python simulation
-#### 0. Installing poetry
-<i>If you have [poetry](https://python-poetry.org/) installed then skip this step.</i><br>
-Windows: `pip install poetry`<br>
-Unix based OS (Linux, macOS, etc.): `pip3 install poetry`
-
-#### 1. Cloning repo and installing packages
-```commandline
-git clone https://github.com/Anvarys/virus-simulation/
-cd virus-simulation
-poetry install
-```
-
-#### 2. Running a simulation
-```
-poetry run python simulations/choose.py
-```
+[_Python version_](https://github.com/Anvarys/virus-simulation-python/)
 
 ---
 
@@ -33,8 +16,8 @@ poetry run python simulations/choose.py
 8. Charts for X dimensional web simulation ✅ (10 Nov)
 9. Web version of the 3d simulation (prob would crash any browser) ✅ (11 Nov)
 10. Change simulations core to support multiple different viruses ✅ (12 Nov)
-11. Add virus presets
-12. Add a GUI to create different viruses
+11. Add virus editor (GUI)
+12. Add virus presets
 
 For Axiom I'm expecting to get to around 8th point in my TODO
 UPD: Wow, I'm already done with 3D simulation (11 Nov)
