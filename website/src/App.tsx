@@ -151,9 +151,23 @@ function App() {
   }
 
   const handleSetSimulationType = (type: string) => {
+    if (type === "2d"){
+    handleSetDimensions(2);
+    setDimensionsUnchanged(2);
+    }
+
+    else if (type === "3d"){
+    handleSetDimensions(3);
+    setDimensionsUnchanged(3);
+    }
+
+    else {
+      setDimensionsUnchanged(dimensions);
+    }
+
+    setGridSizeUnchanged(gridSize);
     setSimulationType(type);
     localStorage.setItem('simulationType', type);
-    handleReset();
   }
 
   const handleSetSettings = (setter: (value: number) => void, value: number) => {
@@ -196,14 +210,6 @@ function App() {
   React.useEffect(() => {
     resetVirusEditor();
   }, [virusesRef])
-
-  React.useEffect(() => {
-    if (simulationType == "2d")
-    handleSetDimensions(2);
-
-    if (simulationType == "3d")
-    handleSetDimensions(3);
-  }, [simulationType])
 
   return (
     <div className='min-h-[100dvh] min-w-full flex items-center p-[2dvh] bg-neutral-950'>
