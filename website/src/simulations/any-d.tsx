@@ -8,6 +8,148 @@ import { toast } from "sonner"
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import InfoIcon from '@/components/icons/InfoIcon';
 import { Toggle } from '@/components/ui/toggle';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { type ColumnDef, type ColumnFiltersState, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, type SortingState, useReactTable, type VisibilityState } from "@tanstack/react-table"
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowDown, faArrowUp, faArrowDownUpAcrossLine } from '@fortawesome/free-solid-svg-icons';
+
+type DataRow = {
+  name: string
+  deaths: number
+}
+
+interface DataTableParams {
+  data: DataRow[]
+}
+
+
+const DataTable: React.FC<DataTableParams> = ({data}) => {
+  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  )
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = React.useState({})
+
+  const columns: ColumnDef<DataRow>[] = [
+    {
+      accessorKey: "name",
+      header: "Name"
+    },
+    {
+      accessorKey: "deaths",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc" ? true : (column.getIsSorted() == false))}
+          >
+            Deaths
+            <FontAwesomeIcon icon={column.getIsSorted() === "asc" ? faArrowUp : (column.getIsSorted() ? faArrowDown : faArrowDownUpAcrossLine)} />
+          </Button>
+        )
+      }
+    }
+  ]
+
+  const table = useReactTable({
+    data,
+    columns,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+      rowSelection,
+    },
+  })
+
+  return (
+    <div className="w-full">
+      <div className="overflow-hidden rounded-md border border-neutral-700">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  )
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={data.length}
+                  className="h-24 text-center"
+                >
+                  No data
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+            className='text-neutral-950'
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+            className='text-neutral-950'
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 
 const chartConfig = {
@@ -64,6 +206,10 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
 
   const [updateChartLines, setUpdateChartLines] = useState(0);
 
+  const deathsByVirusRef = useRef<DataRow[]>([]);
+
+  const [showingMoreData, setShowingMoreData] = useState(false);
+
   const dirs = [[-1, 1], [1, -1]]
 
   function get_infected(id: number, frame: number) {
@@ -112,6 +258,8 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
         gridRef.current[id*cellStates] = virus.recoveryDuration;
         gridRef.current[id*cellStates + 3] = vid
       }
+
+      deathsByVirusRef.current.push({name: virus.name, deaths: 0})
     }
 
     deadCountRef.current = 0;
@@ -138,6 +286,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
           if (Math.random() < viruses[grid[i*cellStates+3]].mortalityChance) {
             grid[i*cellStates+2] = 1;
             deadCountRef.current += 1;
+            deathsByVirusRef.current[grid[i*cellStates+3]].deaths += 1;
             continue;
           }
           infectedTotal += 1;
@@ -199,7 +348,10 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
   window.onresize = handleResize;
 
   return (
-    <div className='w-full h-full p-8 pl-2 flex flex-col'>
+    <div className='w-full h-full p-8 pl-2 flex flex-col relative'>
+      { frameRef.current === -1 &&
+        <Button className='absolute bottom-4 right-4' onClick={() => {setShowingMoreData(true)}}>Show more data</Button>
+      }
       <ToggleGroup type='multiple' variant="outline" spacing={2} size="sm"
         value={chartSettingsRef.current} onValueChange={handleGroupToggleValueChange}
         className='h-min ml-10 mb-3 flex flex-wrap'
@@ -399,6 +551,13 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
         </LineChart>
       </ChartContainer>
       </div>
+
+      <Dialog open={showingMoreData} onOpenChange={setShowingMoreData}>
+        <DialogContent className='bg-neutral-900 border-neutral-800 p-12 text-neutral-100'>
+          <Label>Additional data on viruses</Label>
+          <DataTable data={deathsByVirusRef.current}/>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

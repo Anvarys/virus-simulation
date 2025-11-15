@@ -584,7 +584,7 @@ function App() {
 
           <div className="space-y-2 flex flex-col justify-center items-stretch">
             
-            { advancedMode && // WIP
+            { advancedMode &&
             <Button 
               onClick={() => {setIsVirusEditorOpen(true)}}
               className="bg-orange-800 border-orange-700 border hover:bg-orange-700 hover:border-orange-600"
@@ -612,7 +612,6 @@ function App() {
 
         {/* Info Panel */}
         </Card>
-        { simulationType !== "" &&
         <Card className="p-6 bg-neutral-900 grow h-min border-neutral-800" ref={infoRef}>
           <div className="space-y-2">
             <div className='flex items-center justify-between'>
@@ -652,7 +651,6 @@ function App() {
             </div>
           </div>
         </Card>
-        }
         </div>
       </div>
       <VirusEditor 
