@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { virusPresets } from "./presets";
+import { HexColorPicker } from 'react-colorful';
 
 
 function generateVirusName() {
@@ -31,13 +32,13 @@ function generateColor() {
 
 const VirusCard: React.FC<VirusCardParams> = ({virus, id, editFunc, deleteFunc}) => {
   return (
-    <div className={`group bg-[var(--virus-color)]/20 w-[10dvw] h-[10dvw] rounded-[1dvh] border border-[var(--virus-color)]/50 flex flex-col items-center p-1 space-y-1 text-neutral-100`} style={{"--virus-color": virus.color} as CSSProperties}>
+    <div className={`relative group bg-[var(--virus-color)]/20 w-[10dvw] h-[10dvw] rounded-[1dvh] border border-[var(--virus-color)]/50 flex flex-col items-center p-1 space-y-1 text-neutral-100`} style={{"--virus-color": virus.color} as CSSProperties}>
       <Label className="text-neutral-100 whitespace-normal mb-2">{virus.name}</Label>
       <div className="flex flex-row w-full justify-between"><Label className="text-xs">Infection %: </Label><span className="text-xs text-violet-300">{(virus.infectionChance*100).toFixed(2)}%</span></div>
       <div className="flex flex-row w-full justify-between"><Label className="text-xs">Mortality %: </Label><span className="text-xs text-violet-300">{(virus.mortalityChance*100).toFixed(2)}%</span></div>
       <div className="flex flex-row w-full justify-between"><Label className="text-xs">Recovery d: </Label><span className="text-xs text-violet-300">{virus.recoveryDuration}</span></div>
       <div className="flex flex-row w-full justify-between"><Label className="text-xs">Immunity d: </Label><span className="text-xs text-violet-300">{virus.immunityDuration}</span></div>
-      <div className="flex flex-row gap-2">
+      <div className="flex flex-row gap-2 absolute bottom-1">
       <Label className="text-neutral-300 hidden group-hover:block space-y-1 mt-1 cursor-pointer hover:text-neutral-100 text-xs" onClick={() => {editFunc(id)}}><FontAwesomeIcon icon={faPen} size="xs"/> Edit</Label>
       <Label className="text-neutral-300 hidden group-hover:block space-y-1 mt-1 cursor-pointer hover:text-neutral-100 text-xs" onClick={() => {deleteFunc(id)}}><FontAwesomeIcon icon={faTrash} size="xs"/> Delete</Label>
       </div>
@@ -150,6 +151,10 @@ const VirusEditor: React.FC<VirusEditorParams> = ({
             </FieldLabel>
             <Input value={currentlyEditingVirus.name} onInput={(e) => {setCurrentlyEditingVirus({...currentlyEditingVirus, name: e.currentTarget.value} satisfies Virus)}}></Input>
           </Field>
+          <div className="space-y-2">
+          <Label>Virus color</Label>
+          <HexColorPicker color={currentlyEditingVirus.color} onChange={(newColor) => {setCurrentlyEditingVirus({...currentlyEditingVirus, color: newColor} satisfies Virus)}}/>
+          </div>
           <div className="space-y-2">
               <div className='flex items-center justify-between'>
                 <Label className="min-w-[9rem]">
