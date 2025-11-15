@@ -1,6 +1,6 @@
 ### This project is about creating and visualising virus simulation models
 
-[_Python version_](https://github.com/Anvarys/virus-simulation-python/)
+[Open the site](https://virus-simulation.pages.dev) | [_Python version_](https://github.com/Anvarys/virus-simulation-python/)
 
 ---
 
@@ -20,6 +20,7 @@
 12. Add virus presets
 
 For Axiom I'm expecting to get to around 8th point in my TODO
+
 UPD: Wow, I'm already done with 3D simulation (11 Nov)
 
 ---
