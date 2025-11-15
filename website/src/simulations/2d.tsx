@@ -57,9 +57,11 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     const dimDir = ( Math.random() * 2 | 0 )
     for (let _dim = 0; _dim < dimensions; _dim++) {
       const dim = dimDir ? _dim : dimensions - _dim;
+      const dimStep = Math.pow(props.gridSize, dim);
       for (let dir of dirs[Math.random() * 2 | 0]) {
-        const n_id = id + dir * Math.pow(props.gridSize, dim);
+        const n_id = id + dir * dimStep;
         if (n_id < 0 || n_id >= props.total) continue;
+        if (Math.abs(Math.floor(n_id / dimStep) % props.gridSize - Math.floor(id / dimStep) % props.gridSize) > 1) continue;
         if (grid[n_id*cellStates] >= frame) {
           const virus = viruses[grid[n_id*cellStates+3]];
           if (Math.random() < virus.infectionChance) {

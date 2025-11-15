@@ -101,7 +101,7 @@ const VirusEditor: React.FC<VirusEditorParams> = ({
 
   const addRandom = () => {
     virusesRef.current.push({
-      infectionChance: parseFloat(Math.random().toFixed(4)),
+      infectionChance: parseFloat((Math.random()/2).toFixed(4)),
       mortalityChance: parseFloat((Math.random()/100).toFixed(4)),
       recoveryDuration: Math.round(Math.random()*10)+10,
       immunityDuration: Math.round(Math.random()*10),

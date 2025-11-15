@@ -283,6 +283,7 @@ function App() {
                   color: getComputedStyle(document.documentElement).getPropertyValue("--infected").trim(),
                   name: "VIRUS52"
                 } satisfies Virus]}
+              advancedMode={advancedMode}
               setInfectedCount={setInfectedCount}
               setDeadCount={setDeadCount}
               setFrameCount={setFrameCount}

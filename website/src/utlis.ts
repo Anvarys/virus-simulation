@@ -13,6 +13,7 @@ export interface BasicSimulationParams {
 
 export interface AnyDimensionalSimulationParams extends BasicSimulationParams {
     dimensions: number;
+    advancedMode: boolean;
 }
 
 export interface ThreeDimensionalSimulationParams extends BasicSimulationParams {

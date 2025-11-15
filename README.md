@@ -14,9 +14,9 @@
 6. Publish web version via [Cloudflare Pages](https://pages.cloudflare.com/) ✅ (9 Nov)
 7. Web version of X dimensional simulation ✅ (9 Nov)
 8. Charts for X dimensional web simulation ✅ (10 Nov)
-9. Web version of the 3d simulation (prob would crash any browser) ✅ (11 Nov)
+9. Web version of the 3d simulation ✅ (11 Nov)
 10. Change simulations core to support multiple different viruses ✅ (12 Nov)
-11. Add virus editor (GUI)
+11. Add virus editor (GUI) ✅ (14 Nov)
 12. Add virus presets
 
 For Axiom I'm expecting to get to around 8th point in my TODO

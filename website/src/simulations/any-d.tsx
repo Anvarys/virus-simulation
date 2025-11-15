@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from "sonner"
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import InfoIcon from '@/components/icons/InfoIcon';
+import { Toggle } from '@/components/ui/toggle';
 
 
 const chartConfig = {
@@ -29,6 +30,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
   gridSize, 
   initialInfected, 
   viruses,
+  advancedMode,
   setInfectedCount,
   setDeadCount, 
   setFrameCount,
@@ -185,7 +187,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
   const handleGroupToggleValueChange = (value: string[]) => {
     if (value.length > 0){
       chartSettingsRef.current = value
-    } else {
+    } else if (!advancedMode) {
       toast.error("You need to choose at least one value")
     }
     if (frameRef.current < 0) {
@@ -257,6 +259,19 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
         >
           Healthy
         </ToggleGroupItem>
+
+        <Toggle onPressedChange={(pressed) => {
+          if (pressed) {
+            chartSettingsRef.current = ["healthy","dead","infectedTotal",...virusesRef.current.map((virus) => virus.name)]
+          } else {
+            chartSettingsRef.current = []
+          }
+          localStorage.setItem("chartSettings",JSON.stringify(chartSettingsRef.current))
+        }} className='border-yellow-500 border data-[state=on]:bg-yellow-600 hover:data-[state=on]:bg-yellow-500
+          hover:bg-yellow-500 hover:text-neutral-100 data-[state=on]:text-neutral-100 
+          data-[state=on]:border-yellow-500 hover:border-yellow-500'>
+          All
+        </Toggle>
       </ToggleGroup>
       <div className='flex flex-col flex-1 w-full h-full min-h-0'>
       <ChartContainer className='p-2 w-full flex-1 min-h-0' config={chartConfig}>
