@@ -557,13 +557,14 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
         </LineChart>
       </ChartContainer>
       </div>
-
+      { frameRef.current === -1 &&
       <Dialog open={showingMoreData} onOpenChange={setShowingMoreData}>
         <DialogContent className='bg-neutral-900 border-neutral-800 p-12 text-neutral-100'>
           <Label>Additional data on viruses</Label>
           <DataTable data={deathsByVirusRef.current}/>
         </DialogContent>
       </Dialog>
+      }
     </div>
   );
 }
