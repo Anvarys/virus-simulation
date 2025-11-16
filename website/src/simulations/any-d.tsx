@@ -582,6 +582,9 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
       <Dialog open={showingMoreData} onOpenChange={setShowingMoreData}>
         <DialogContent className='bg-neutral-900 border-neutral-800 p-12 text-neutral-100'>
           <Label>Additional data on viruses</Label>
+          { frameRef.current !== -1 &&
+            <Label className='text-neutral-300 text-xs'>For the table to be interactive wait until the end of the simulation</Label>
+          }
           <DataTable data={virusDataRef.current} key={frameRef.current}/>
           <Button onClick={() => {
             if (!virusDataRef.current) { return}
