@@ -13,8 +13,9 @@ import SimulationAnyD from '@/simulations/any-d';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Simulation3D from '@/simulations/3d';
-import { getVirusesFromLocal, type Virus } from './utlis';
-import VirusEditor from './viruses/virus-editor';
+import { getVirusesFromLocal, type Virus } from '@/utlis';
+import VirusEditor from '@/viruses/virus-editor';
+import { Toggle } from '@/components/ui/toggle';
 
 function App() {
   const defaultSettings = {
@@ -68,6 +69,9 @@ function App() {
     return dimensions;
   });
 
+  const [paused, setPaused] = React.useState(false)
+  const pausedRef = React.useRef(false)
+
   const [isVirusEditorOpen, setIsVirusEditorOpen] = React.useState(false)
 
   const [advancedMode, setAdvancedMode] = React.useState((localStorage.getItem('mode') || "normal") === "advanced");
@@ -116,6 +120,7 @@ function App() {
     setDimensionsUnchanged(dimensions);
 
     setResetKey(prev => prev + 1);
+    setPaused(false)
   };
 
   const handleResetSettings = () => {
@@ -168,6 +173,7 @@ function App() {
     setGridSizeUnchanged(gridSize);
     setSimulationType(type);
     localStorage.setItem('simulationType', type);
+    setPaused(false)
   }
 
   const handleSetSettings = (setter: (value: number) => void, value: number) => {
@@ -211,6 +217,10 @@ function App() {
     resetVirusEditor();
   }, [virusesRef])
 
+  React.useEffect(() => {
+    pausedRef.current = paused
+  }, [paused])
+
   return (
     <div className='min-h-[100dvh] min-w-full flex items-center p-[2dvh] bg-neutral-950'>
       <div className='flex gap-8 w-full max-w-[96dvw] h-[96dvh] text-neutral-100'>
@@ -247,6 +257,7 @@ function App() {
                   color: getComputedStyle(document.documentElement).getPropertyValue("--infected").trim(),
                   name: "VIRUS52"
                 } satisfies Virus]}
+              pausedRef={pausedRef}
               setInfectedCount={setInfectedCount}
               setDeadCount={setDeadCount}
               setFrameCount={setFrameCount}
@@ -267,6 +278,7 @@ function App() {
                   color: getComputedStyle(document.documentElement).getPropertyValue("--infected").trim(),
                   name: "VIRUS52"
                 } satisfies Virus]}
+              pausedRef={pausedRef}
               setInfectedCount={setInfectedCount}
               setDeadCount={setDeadCount}
               setFrameCount={setFrameCount}
@@ -289,6 +301,7 @@ function App() {
                   color: getComputedStyle(document.documentElement).getPropertyValue("--infected").trim(),
                   name: "VIRUS52"
                 } satisfies Virus]}
+              pausedRef={pausedRef}
               advancedMode={advancedMode}
               setInfectedCount={setInfectedCount}
               setDeadCount={setDeadCount}
@@ -582,7 +595,7 @@ function App() {
             </div>
           </div>
 
-          <div className="space-y-2 flex flex-col justify-center items-stretch">
+          <div className="space-y-3 flex flex-col justify-center items-stretch">
             
             { advancedMode &&
             <Button 
@@ -592,14 +605,12 @@ function App() {
               Open virus editor
             </Button>
             }
-            <br/>
             <Button 
               onClick={handleResetSettings}
               className="bg-violet-800 border-violet-700 border hover:bg-violet-700 border-violet-600"
             >
               Reset settings
             </Button>
-            <br/>
             { simulationType !== "" &&
             <Button 
               onClick={handleReset}
@@ -607,6 +618,15 @@ function App() {
             >
               Restart simulation
             </Button>
+            }
+            { simulationType !== "" &&
+            <Toggle 
+              onPressedChange={setPaused}
+              pressed={paused}
+              className="border data-[state=on]:bg-green-800 hover:bg-blue-800 data-[state=on]:border-green-700 data-[state=on]:hover:border-green-600 hover:border-blue-600 bg-blue-800 border-blue-700 cursor-pointer transition-colors"
+            >
+              {paused ? "Play" : "Pause"}
+            </Toggle>
             }
           </div>
 

@@ -173,6 +173,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
   initialInfected, 
   viruses,
   advancedMode,
+  pausedRef,
   setInfectedCount,
   setDeadCount, 
   setFrameCount,
@@ -271,6 +272,11 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
     const props = initialPropsRef.current;
 
     const loop = () => { 
+      if (pausedRef.current) {
+        frameIdRef.current = requestAnimationFrame(loop);
+        return
+      }
+
       let infectedTotal = 0;
       const frame = frameRef.current
       const viruses = virusesRef.current

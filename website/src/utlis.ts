@@ -4,6 +4,7 @@ export interface BasicSimulationParams {
     gridSize: number;
     initialInfected: number;
     viruses: Virus[];
+    pausedRef: React.RefObject<boolean>;
     setInfectedCount: (count: number) => void;
     setDeadCount: (count: number) => void;
     setFrameCount: (count: number) => void;

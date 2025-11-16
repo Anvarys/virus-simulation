@@ -8,6 +8,7 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
   gridSize, 
   initialInfected, 
   viruses,
+  pausedRef,
   setInfectedCount,
   setDeadCount,
   setFrameCount,
@@ -103,6 +104,10 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
     const props = initialPropsRef.current;
 
     const loop = () => {
+      if (pausedRef.current) {
+        frameIdRef.current = requestAnimationFrame(loop);
+        return
+      }
       let infected = 0;
       const frame = frameRef.current
       const viruses = virusesRef.current
