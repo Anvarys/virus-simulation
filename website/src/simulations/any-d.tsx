@@ -562,6 +562,27 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
         <DialogContent className='bg-neutral-900 border-neutral-800 p-12 text-neutral-100'>
           <Label>Additional data on viruses</Label>
           <DataTable data={deathsByVirusRef.current}/>
+          <Button onClick={() => {
+            if (!deathsByVirusRef.current) { return}
+            const data = deathsByVirusRef.current;
+            const headers = Object.keys(data[0]);
+
+            const csvRows = [
+              headers.join(","),
+              ...data.map(item => headers.map(h => item[h as keyof DataRow]).join(","))
+            ];
+            const csvContent = csvRows.join("\n");
+
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a"); 
+            link.href = url;
+            link.setAttribute("download", "export.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+          }}>Download CSV</Button>
         </DialogContent>
       </Dialog>
       }
