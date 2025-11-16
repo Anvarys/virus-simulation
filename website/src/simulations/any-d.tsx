@@ -376,7 +376,9 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
 
   return (
     <div className='w-full h-full p-8 pl-2 flex flex-col relative'>
+      { viruses.length > 1 &&
       <Button className='absolute bottom-4 right-4' onClick={() => {setShowingMoreData(true)}}>Show more data</Button>
+      }
       <ToggleGroup type='multiple' variant="outline" spacing={2} size="sm"
         value={chartSettingsRef.current} onValueChange={handleGroupToggleValueChange}
         className='h-min ml-10 mb-3 flex flex-wrap'
@@ -576,6 +578,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
         </LineChart>
       </ChartContainer>
       </div>
+      { viruses.length > 1 &&
       <Dialog open={showingMoreData} onOpenChange={setShowingMoreData}>
         <DialogContent className='bg-neutral-900 border-neutral-800 p-12 text-neutral-100'>
           <Label>Additional data on viruses</Label>
@@ -603,6 +606,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
           }}>Download CSV</Button>
         </DialogContent>
       </Dialog>
+      }
     </div>
   );
 }
