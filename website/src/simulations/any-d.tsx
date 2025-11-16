@@ -18,6 +18,7 @@ import { faArrowDown, faArrowUp, faArrowDownUpAcrossLine } from '@fortawesome/fr
 type DataRow = {
   name: string
   deaths: number
+  extinction: number
 }
 
 interface DataTableParams {
@@ -48,6 +49,20 @@ const DataTable: React.FC<DataTableParams> = ({data}) => {
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc" ? true : (column.getIsSorted() == false))}
           >
             Deaths
+            <FontAwesomeIcon icon={column.getIsSorted() === "asc" ? faArrowUp : (column.getIsSorted() ? faArrowDown : faArrowDownUpAcrossLine)} />
+          </Button>
+        )
+      }
+    },
+    {
+      accessorKey: "extinction",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc" ? true : (column.getIsSorted() == false))}
+          >
+            Extinction Date
             <FontAwesomeIcon icon={column.getIsSorted() === "asc" ? faArrowUp : (column.getIsSorted() ? faArrowDown : faArrowDownUpAcrossLine)} />
           </Button>
         )
@@ -207,7 +222,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
 
   const [updateChartLines, setUpdateChartLines] = useState(0);
 
-  const deathsByVirusRef = useRef<DataRow[]>([]);
+  const virusDataRef = useRef<DataRow[]>([]);
 
   const [showingMoreData, setShowingMoreData] = useState(false);
 
@@ -260,7 +275,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
         gridRef.current[id*cellStates + 3] = vid
       }
 
-      deathsByVirusRef.current.push({name: virus.name, deaths: 0})
+      virusDataRef.current.push({name: virus.name, deaths: 0, extinction: -1})
     }
 
     deadCountRef.current = 0;
@@ -292,7 +307,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
           if (Math.random() < viruses[grid[i*cellStates+3]].mortalityChance) {
             grid[i*cellStates+2] = 1;
             deadCountRef.current += 1;
-            deathsByVirusRef.current[grid[i*cellStates+3]].deaths += 1;
+            virusDataRef.current[grid[i*cellStates+3]].deaths += 1;
             continue;
           }
           infectedTotal += 1;
@@ -302,6 +317,12 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
         if (grid[i*cellStates] < frame && grid[i*cellStates+1] < frame && get_infected(i, frameRef.current)) {
           infectedTotal += 1
           infected[grid[i*cellStates+3]] += 1
+        }
+      }
+
+      for (let i = 0; i < viruses.length; i++) {
+        if (infected[i] === 0 && virusDataRef.current[i].extinction === -1) {
+          virusDataRef.current[i].extinction = frame
         }
       }
       
@@ -355,9 +376,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
 
   return (
     <div className='w-full h-full p-8 pl-2 flex flex-col relative'>
-      { frameRef.current === -1 &&
-        <Button className='absolute bottom-4 right-4' onClick={() => {setShowingMoreData(true)}}>Show more data</Button>
-      }
+      <Button className='absolute bottom-4 right-4' onClick={() => {setShowingMoreData(true)}}>Show more data</Button>
       <ToggleGroup type='multiple' variant="outline" spacing={2} size="sm"
         value={chartSettingsRef.current} onValueChange={handleGroupToggleValueChange}
         className='h-min ml-10 mb-3 flex flex-wrap'
@@ -557,14 +576,13 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
         </LineChart>
       </ChartContainer>
       </div>
-      { frameRef.current === -1 &&
       <Dialog open={showingMoreData} onOpenChange={setShowingMoreData}>
         <DialogContent className='bg-neutral-900 border-neutral-800 p-12 text-neutral-100'>
           <Label>Additional data on viruses</Label>
-          <DataTable data={deathsByVirusRef.current}/>
+          <DataTable data={virusDataRef.current} key={frameRef.current}/>
           <Button onClick={() => {
-            if (!deathsByVirusRef.current) { return}
-            const data = deathsByVirusRef.current;
+            if (!virusDataRef.current) { return}
+            const data = virusDataRef.current;
             const headers = Object.keys(data[0]);
 
             const csvRows = [
@@ -585,7 +603,6 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
           }}>Download CSV</Button>
         </DialogContent>
       </Dialog>
-      }
     </div>
   );
 }
