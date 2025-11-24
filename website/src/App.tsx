@@ -233,6 +233,9 @@ function App() {
     { source: "a", target: "c" },
   ]);
 
+  // THIS IS WIP BTW
+  console.log(setNodes, setLinks)
+
 
   return (
     <div className='min-h-[100dvh] min-w-full flex items-center p-[2dvh] bg-neutral-950'>
