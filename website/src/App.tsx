@@ -16,6 +16,7 @@ import Simulation3D from '@/simulations/3d';
 import { getVirusesFromLocal, type Virus } from '@/utlis';
 import VirusEditor from '@/viruses/virus-editor';
 import { Toggle } from '@/components/ui/toggle';
+import D3Graph, { type LinkDatum, type NodeDatum } from './simulations/graph';
 
 function App() {
   const defaultSettings = {
@@ -221,6 +222,18 @@ function App() {
     pausedRef.current = paused
   }, [paused])
 
+  const [nodes, setNodes] = React.useState<NodeDatum[]>([
+    { id: "a", group: 0 },
+    { id: "b", group: 1 },
+    { id: "c", group: 1 },
+  ]);
+
+  const [links, setLinks] = React.useState<LinkDatum[]>([
+    { source: "a", target: "b" },
+    { source: "a", target: "c" },
+  ]);
+
+
   return (
     <div className='min-h-[100dvh] min-w-full flex items-center p-[2dvh] bg-neutral-950'>
       <div className='flex gap-8 w-full max-w-[96dvw] h-[96dvh] text-neutral-100'>
@@ -313,7 +326,12 @@ function App() {
             />
             }
 
-            
+            { (simulationType === "graph" && isLauched && !isVirusEditorOpen) &&
+              <D3Graph 
+                nodes={nodes}
+                links={links}
+              ></D3Graph>
+            }
           </div>
         </Card>
 
@@ -332,6 +350,7 @@ function App() {
                   <SelectItem value="2d">2D Simulation</SelectItem>
                   <SelectItem value="3d">3D Simulation</SelectItem>
                   <SelectItem value="any-d">Any-D Simulation</SelectItem>
+                  <SelectItem value='graph'>Graph simulation</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
