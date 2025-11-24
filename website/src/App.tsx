@@ -222,16 +222,25 @@ function App() {
     pausedRef.current = paused
   }, [paused])
 
-  const [nodes, setNodes] = React.useState<NodeDatum[]>([
-    { id: "a", group: 0 },
-    { id: "b", group: 1 },
-    { id: "c", group: 1 },
-  ]);
+  const [nodes, setNodes] = React.useState<NodeDatum[]>(() => {
+    let res: NodeDatum[] = [];
 
-  const [links, setLinks] = React.useState<LinkDatum[]>([
-    { source: "a", target: "b" },
-    { source: "a", target: "c" },
-  ]);
+    for (let i = 0; i < 200; i++){
+      res.push({id: i, group: 1})
+    }
+
+    return res
+  });
+
+  const [links, setLinks] = React.useState<LinkDatum[]>(() => {
+    let res: LinkDatum[] = [];
+
+    for (let i = 0; i < 300; i++){
+      res.push({source: Math.floor(Math.random()*200), target: Math.floor(Math.random()*200)})
+    }
+
+    return res
+  });
 
   // THIS IS WIP BTW
   console.log(setNodes, setLinks)
@@ -331,6 +340,7 @@ function App() {
 
             { (simulationType === "graph" && isLauched && !isVirusEditorOpen) &&
               <D3Graph 
+                key={resetKey}
                 nodes={nodes}
                 links={links}
               ></D3Graph>

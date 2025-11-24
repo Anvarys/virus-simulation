@@ -2,8 +2,18 @@
 import { useRef, useEffect } from "react";
 import * as d3 from "d3";
 
-type NodeDatum = { id: string; r?: number; group?: number };
-type LinkDatum = { source: string; target: string; value?: number };
+type NodeDatum = { 
+  id: number; r?: number; group?: number 
+
+  // not real
+  x?: number;
+  y?: number;
+  vx?: number;
+  vy?: number;
+  fx?: number | null;
+  fy?: number | null;
+};
+type LinkDatum = { source: number; target: number; value?: number };
 
 interface D3GraphProps {
   nodes: NodeDatum[];
@@ -32,23 +42,26 @@ export default function D3Graph({
       .attr("preserveAspectRatio", "xMidYMid meet");
 
     svg.selectAll("*").remove();
-    const linkG = svg.append("g").attr("class", "links");
-    const nodeG = svg.append("g").attr("class", "nodes");
+
+    const container = svg.append("g").attr("class", "zoom-container");
+    
+    const linkG = container.append("g").attr("class", "links");
+    const nodeG = container.append("g").attr("class", "nodes");
 
     const link = linkG
       .selectAll("line")
       .data(linksData, (d: any) => `${d.source}->${d.target}`)
       .join("line")
       .attr("stroke-width", (d: any) => Math.max(1, (d.value ?? 1)))
-      .attr("stroke-opacity", 0.6);
+      .attr("stroke-opacity", 0.6)
+      .attr("stroke", "white");
 
     const node = nodeG
-      .selectAll("circle")
+      .selectAll<SVGCircleElement, NodeDatum>("circle")
       .data(nodesData, (d: any) => d.id)
       .join("circle")
       .attr("r", (d) => d.r ?? 8)
       .attr("stroke", "#ffffff")
-      .attr("stroke-width", 0.6)
       .attr("fill", (d) => (d.group != null ? d3.schemeCategory10[(d.group % 10)] : "#69b3a2"));
 
     node.append("title").text((d: any) => d.id);
@@ -63,6 +76,39 @@ export default function D3Graph({
       .force("center", d3.forceCenter(width / 2, height / 2));
 
     simRef.current = sim;
+
+    const dragBehavior = d3
+      .drag<SVGCircleElement, NodeDatum, NodeDatum>()
+      .on("start", (event, d) => {
+        if (!simRef.current) return;
+        if (!event.active) simRef.current.alphaTarget(0.3).restart();
+        d.fx = d.x ?? event.x;
+        d.fy = d.y ?? event.y;
+        d3.select(event.sourceEvent.currentTarget)
+          .style("cursor", "grabbing");
+      })
+      .on("drag", (event, d) => {
+        d.fx = event.x;
+        d.fy = event.y;
+      })
+      .on("end", (event, d) => {
+        if (!simRef.current) return;
+        if (!event.active) simRef.current.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+
+        d3.select(event.sourceEvent.currentTarget).style("cursor", "grab"); 
+      });
+
+    node.call(dragBehavior);
+
+    const zoomBehavior = d3.zoom<SVGSVGElement, unknown>()
+      .scaleExtent([0.2, 5])
+      .on("zoom", (event) => {
+        container.attr("transform", event.transform);
+      });
+
+    svg.call(zoomBehavior as any);
 
     sim.on("tick", () => {
       link
@@ -83,7 +129,7 @@ export default function D3Graph({
 
   return (
     <div className="w-full h-full">
-      <svg ref={svgRef} className="w-full h-full" />
+      <svg ref={svgRef} className="w-full h-full text-blue-600" />
     </div>
   );
 }
