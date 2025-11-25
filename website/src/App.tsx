@@ -28,12 +28,20 @@ function App() {
     immunityDuration: 4,
     dimensions: 2,
     opacity: 50,
-    cubeSize: 90
+    cubeSize: 90,
+    peopleCount: 50,
+    connectionsCount: 100
   };
 
   const [resetKey, setResetKey] = React.useState(0);
   const [gridSize, setGridSize] = React.useState(() => {
     return Number(localStorage.getItem('gridSize')) || defaultSettings.gridSize;
+  });
+  const [peopleCount, setPeopleCount] = React.useState(() => {
+    return Number(localStorage.getItem('peopleCount')) || defaultSettings.gridSize;
+  });
+  const [connectionsCount, setConnectionsCount] = React.useState(() => {
+    return Number(localStorage.getItem('connectionsCount')) || defaultSettings.gridSize;
   });
   const [initialInfected, setInitialInfected] = React.useState(() => {
     return Number(localStorage.getItem('initialInfected')) || defaultSettings.initialInfected;
@@ -96,7 +104,9 @@ function App() {
     localStorage.setItem('dimensions', String(dimensions));
     localStorage.setItem('opacity', String(opacity));
     localStorage.setItem('cubeSize', String(cubeSize));
-  }, [gridSize, initialInfected, infectionChance, mortalityChance, recoveryDuration, immunityDuration, dimensions, opacity, cubeSize]);
+    localStorage.setItem('peopleCount', String(peopleCount));
+    localStorage.setItem('connectionsCount', String(connectionsCount));
+  }, [gridSize, initialInfected, infectionChance, mortalityChance, recoveryDuration, immunityDuration, dimensions, opacity, cubeSize, peopleCount, connectionsCount]);
 
   const [deadCount, setDeadCount] = React.useState(0);
   const [infectedCount, setInfectedCount] = React.useState(0);
@@ -131,6 +141,8 @@ function App() {
     setMortalityChance(defaultSettings.mortalityChance);
     setRecoveryDuration(defaultSettings.recoveryDuration);
     setImmunityDuration(defaultSettings.immunityDuration);
+    setConnectionsCount(defaultSettings.connectionsCount);
+    setPeopleCount(defaultSettings.peopleCount);
   };
 
   const handleSetGridSize = (size: number) => {
@@ -222,28 +234,31 @@ function App() {
     pausedRef.current = paused
   }, [paused])
 
-  const [nodes, setNodes] = React.useState<NodeDatum[]>(() => {
+  const [nodes, setNodes] = React.useState<NodeDatum[]>([]);
+
+  const [links, setLinks] = React.useState<LinkDatum[]>([]);
+
+  React.useEffect(() => {
+    setLinks(() => {
+    let res: LinkDatum[] = [];
+
+    for (let i = 0; i < connectionsCount; i++){
+      res.push({source: Math.floor(Math.random()*peopleCount), target: Math.floor(Math.random()*peopleCount)})
+    }
+
+    return res
+  })
+
+  setNodes(() => {
     let res: NodeDatum[] = [];
 
-    for (let i = 0; i < 200; i++){
+    for (let i = 0; i < peopleCount; i++){
       res.push({id: i, group: 1})
     }
 
     return res
-  });
-
-  const [links, setLinks] = React.useState<LinkDatum[]>(() => {
-    let res: LinkDatum[] = [];
-
-    for (let i = 0; i < 300; i++){
-      res.push({source: Math.floor(Math.random()*200), target: Math.floor(Math.random()*200)})
-    }
-
-    return res
-  });
-
-  // THIS IS WIP BTW
-  console.log(setNodes, setLinks)
+  })
+  }, [peopleCount, connectionsCount])
 
 
   return (
@@ -396,6 +411,33 @@ function App() {
               </div>
             }
 
+            { simulationType === "graph" ?
+            <div className="space-y-2">
+              <div className='flex items-center justify-between'>
+                <Label>
+                  People
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon color="white" width='1rem' height='1rem'/>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Amount of people</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </Label>
+                
+                <span className="text-sm text-violet-300">{peopleCount}</span>
+              </div>
+              <Slider
+                value={[peopleCount]}
+                onValueChange={([value]) => handleSetSettings(setPeopleCount,value)}
+                min={2}
+                max={200}
+                step={1}
+                className="w-full"
+              />
+            </div>
+            :
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
                 <Label>
@@ -421,6 +463,35 @@ function App() {
                 className="w-full"
               />
             </div>
+            }
+
+            { simulationType === "graph" &&
+            <div className="space-y-2">
+              <div className='flex items-center justify-between'>
+                <Label>
+                  Connections
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon color="white" width='1rem' height='1rem'/>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Amount of connections<br/>between humans (in total)</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </Label>
+                
+                <span className="text-sm text-violet-300">{connectionsCount}</span>
+              </div>
+              <Slider   
+                value={[connectionsCount]}
+                onValueChange={([value]) => handleSetSettings(setConnectionsCount,value)}
+                min={0}
+                max={peopleCount*10}
+                step={1}
+                className="w-full"
+              />
+            </div>
+            }
 
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
