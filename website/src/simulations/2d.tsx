@@ -9,6 +9,7 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
   initialInfected, 
   viruses,
   pausedRef,
+  vaccinatedPart,
   setInfectedCount,
   setDeadCount,
   setFrameCount,
@@ -67,6 +68,7 @@ const Simulation2D: React.FC<BasicSimulationParams> = ({
           const virus = viruses[grid[n_id*cellStates+3]];
           if (Math.random() < virus.infectionChance) {
             grid[id*cellStates] = frame + virus.recoveryDuration;
+            if (Math.random() < vaccinatedPart)
             grid[id*cellStates + 1] = frame + virus.recoveryDuration + virus.immunityDuration;
             grid[id*cellStates + 3] = grid[n_id*cellStates+3]
             return true;

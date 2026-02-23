@@ -5,6 +5,7 @@ export interface BasicSimulationParams {
     initialInfected: number;
     viruses: Virus[];
     pausedRef: React.RefObject<boolean>;
+    vaccinatedPart: number;
     setInfectedCount: (count: number) => void;
     setDeadCount: (count: number) => void;
     setFrameCount: (count: number) => void;

@@ -25,12 +25,13 @@ function App() {
     infectionChance: 20,
     mortalityChance: 0.2,
     recoveryDuration: 10,
-    immunityDuration: 4,
+    immunityDuration: 25,
     dimensions: 2,
     opacity: 50,
     cubeSize: 90,
     peopleCount: 50,
-    connectionsCount: 100
+    connectionsCount: 100,
+    vaccinatedPart: 0.4
   };
 
   const [resetKey, setResetKey] = React.useState(0);
@@ -54,6 +55,9 @@ function App() {
   });
   const [recoveryDuration, setRecoveryDuration] = React.useState(() => {
     return Number(localStorage.getItem('recoveryDuration')) || defaultSettings.recoveryDuration;
+  });
+  const [vaccinatedPart, setVaccinatedPart] = React.useState(() => {
+    return Number(localStorage.getItem('vaccinatedPart')) || defaultSettings.vaccinatedPart;
   });
   const [immunityDuration, setImmunityDuration] = React.useState(() => {
     return Number(localStorage.getItem('immunityDuration')) || defaultSettings.immunityDuration;
@@ -106,7 +110,8 @@ function App() {
     localStorage.setItem('cubeSize', String(cubeSize));
     localStorage.setItem('peopleCount', String(peopleCount));
     localStorage.setItem('connectionsCount', String(connectionsCount));
-  }, [gridSize, initialInfected, infectionChance, mortalityChance, recoveryDuration, immunityDuration, dimensions, opacity, cubeSize, peopleCount, connectionsCount]);
+    localStorage.setItem('vaccinatedPart', String(vaccinatedPart));
+  }, [gridSize, initialInfected, infectionChance, mortalityChance, recoveryDuration, immunityDuration, dimensions, opacity, cubeSize, peopleCount, connectionsCount, vaccinatedPart]);
 
   const [deadCount, setDeadCount] = React.useState(0);
   const [infectedCount, setInfectedCount] = React.useState(0);
@@ -299,6 +304,7 @@ function App() {
                   color: getComputedStyle(document.documentElement).getPropertyValue("--infected").trim(),
                   name: "VIRUS52"
                 } satisfies Virus]}
+              vaccinatedPart={vaccinatedPart}
               pausedRef={pausedRef}
               setInfectedCount={setInfectedCount}
               setDeadCount={setDeadCount}
@@ -320,6 +326,7 @@ function App() {
                   color: getComputedStyle(document.documentElement).getPropertyValue("--infected").trim(),
                   name: "VIRUS52"
                 } satisfies Virus]}
+              vaccinatedPart={vaccinatedPart}
               pausedRef={pausedRef}
               setInfectedCount={setInfectedCount}
               setDeadCount={setDeadCount}
@@ -343,6 +350,7 @@ function App() {
                   color: getComputedStyle(document.documentElement).getPropertyValue("--infected").trim(),
                   name: "VIRUS52"
                 } satisfies Virus]}
+              vaccinatedPart={vaccinatedPart}
               pausedRef={pausedRef}
               advancedMode={advancedMode}
               setInfectedCount={setInfectedCount}
@@ -378,7 +386,9 @@ function App() {
                   <SelectItem value="2d">2D Simulation</SelectItem>
                   <SelectItem value="3d">3D Simulation</SelectItem>
                   <SelectItem value="any-d">Any-D Simulation</SelectItem>
-                  <SelectItem value='graph'>Graph simulation</SelectItem>
+                  { import.meta.env.DEV &&
+                    <SelectItem value='graph'>Graph simulation</SelectItem>
+                  }
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -432,7 +442,7 @@ function App() {
                 value={[peopleCount]}
                 onValueChange={([value]) => handleSetSettings(setPeopleCount,value)}
                 min={2}
-                max={200}
+                max={1000}
                 step={1}
                 className="w-full"
               />
@@ -464,6 +474,32 @@ function App() {
               />
             </div>
             }
+
+            <div className="space-y-2">
+              <div className='flex items-center justify-between'>
+                <Label>
+                  Vaccinated part
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon color="white" width='1rem' height='1rem'/>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Part of people that will<br/>vaccinate after getting infected</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </Label>
+                
+                <span className="text-sm text-violet-300">{(vaccinatedPart*100).toFixed(0)}%</span>
+              </div>
+              <Slider
+                value={[vaccinatedPart*100]}
+                onValueChange={([value]) => handleSetSettings(setVaccinatedPart,value/100)}
+                min={0}
+                max={100}
+                step={1}
+                className="w-full"
+              />
+            </div>
 
             { simulationType === "graph" &&
             <div className="space-y-2">

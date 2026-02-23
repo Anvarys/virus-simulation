@@ -189,6 +189,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
   viruses,
   advancedMode,
   pausedRef,
+  vaccinatedPart,
   setInfectedCount,
   setDeadCount, 
   setFrameCount,
@@ -243,6 +244,7 @@ const SimulationAnyD: React.FC<AnyDimensionalSimulationParams> = ({
                 const virus = viruses[grid[n_id*cellStates+3]];
                 if (Math.random() < virus.infectionChance) {
                     grid[id*cellStates] = frame + virus.recoveryDuration;
+                    if (Math.random() < vaccinatedPart)
                     grid[id*cellStates + 1] = frame + virus.recoveryDuration + virus.immunityDuration;
                     grid[id*cellStates + 3] = grid[n_id*cellStates+3]
                     return true;

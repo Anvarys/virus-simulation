@@ -103,7 +103,7 @@ export default function D3Graph({
     node.call(dragBehavior);
 
     const zoomBehavior = d3.zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.2, 5])
+      .scaleExtent([0.05, 5])
       .on("zoom", (event) => {
         container.attr("transform", event.transform);
       });
