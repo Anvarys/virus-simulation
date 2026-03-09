@@ -59,6 +59,9 @@ function App() {
   const [vaccinatedPart, setVaccinatedPart] = React.useState(() => {
     return Number(localStorage.getItem('vaccinatedPart')) || defaultSettings.vaccinatedPart;
   });
+  /*const [vaccineEfficiency, setVaccineEfficiency] = React.useState(() => {
+    return Number(localStorage.getItem('vaccineEfficiency')) || defaultSettings.vaccinatedPart;
+  });*/
   const [immunityDuration, setImmunityDuration] = React.useState(() => {
     return Number(localStorage.getItem('immunityDuration')) || defaultSettings.immunityDuration;
   });
@@ -73,6 +76,9 @@ function App() {
   });
   const [restartOnUpdate, setRestartOnUpdate] = React.useState(() => {
     return Boolean(localStorage.getItem('restartOnUpdate')) || false;
+  });
+  const [langEnglish, setLangEnglish] = React.useState<boolean>(() => {
+    return Boolean(localStorage.getItem('langEnglish')) || true;
   });
 
   const [gridSizeUnchanged, setGridSizeUnchanged] = React.useState(() => {
@@ -111,7 +117,8 @@ function App() {
     localStorage.setItem('peopleCount', String(peopleCount));
     localStorage.setItem('connectionsCount', String(connectionsCount));
     localStorage.setItem('vaccinatedPart', String(vaccinatedPart));
-  }, [gridSize, initialInfected, infectionChance, mortalityChance, recoveryDuration, immunityDuration, dimensions, opacity, cubeSize, peopleCount, connectionsCount, vaccinatedPart]);
+    localStorage.setItem('langEnglish', String(langEnglish))
+  }, [gridSize, initialInfected, infectionChance, mortalityChance, recoveryDuration, immunityDuration, dimensions, opacity, cubeSize, peopleCount, connectionsCount, vaccinatedPart, langEnglish]);
 
   const [deadCount, setDeadCount] = React.useState(0);
   const [infectedCount, setInfectedCount] = React.useState(0);
@@ -276,7 +283,7 @@ function App() {
               <Button 
                 onClick={handleLaunch}
               >
-                Launch Simulation
+                {langEnglish ? "Launch Simulation" : "Lancer la simulation"}
               </Button>
             }
             { simulationType === "" && isLauched && !isVirusEditorOpen &&
@@ -451,7 +458,7 @@ function App() {
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
                 <Label>
-                  Grid size
+                  {langEnglish ? "Grid size" : "Taille de la grille"}
                   <Tooltip>
                     <TooltipTrigger>
                       <InfoIcon color="white" width='1rem' height='1rem'/>
@@ -478,7 +485,7 @@ function App() {
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
                 <Label>
-                  Vaccinated part
+                  {langEnglish ? "Vaccinated part" : "Part vacciné"}
                   <Tooltip>
                     <TooltipTrigger>
                       <InfoIcon color="white" width='1rem' height='1rem'/>
@@ -532,7 +539,7 @@ function App() {
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
                 <Label>
-                  Initial infected
+                  {langEnglish ? "Initial infected" : "Initialement infectée"}
                   <Tooltip>
                     <TooltipTrigger>
                       <InfoIcon color="white" width='1rem' height='1rem'/>
@@ -557,7 +564,7 @@ function App() {
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
                 <Label className="min-w-[9rem]">
-                  Infection chance
+                  {langEnglish ? "Infection chance" : "Probabilite d'infection"}
                   <Tooltip>
                     <TooltipTrigger>
                       <InfoIcon color="white" width='1rem' height='1rem'/>
@@ -582,7 +589,9 @@ function App() {
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
                 <div className='flex flex-row items-left'>
-                  <Label className="pr-2 min-w-[7.4rem]">Mortality chance</Label>
+                  <Label className="pr-2 min-w-[7.4rem]">
+                    {langEnglish ? "Mortality chance" : "Chance de mortalite"}
+                  </Label>
                   <Tooltip>
                     <TooltipTrigger>
                       <InfoIcon color="white" width='1rem' height='1rem'/>
@@ -607,7 +616,7 @@ function App() {
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
                 <Label>
-                  Recovery duration
+                  {langEnglish ? "Recovery duration" : "NT_YET"}
                   <Tooltip>
                     <TooltipTrigger>
                       <InfoIcon color="white" width='1rem' height='1rem'/>
@@ -632,7 +641,7 @@ function App() {
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
                 <Label>
-                  Immunity duration
+                  {langEnglish ? "Immunity duration" : "Durée d'immunite"}
                   <Tooltip>
                     <TooltipTrigger>
                       <InfoIcon color="white" width='1rem' height='1rem'/>
@@ -658,7 +667,7 @@ function App() {
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
                 <Label>
-                  Opacity
+                  {langEnglish ? "Opacity" : "Opacite"}
                   <Tooltip>
                     <TooltipTrigger>
                       <InfoIcon color="white" width='1rem' height='1rem'/>
@@ -684,7 +693,7 @@ function App() {
             <div className="space-y-2">
               <div className='flex items-center justify-between'>
                 <Label>
-                  Cube size
+                  {langEnglish ? "Cube size" : "Taille de les cubes"}
                   <Tooltip>
                     <TooltipTrigger>
                       <InfoIcon color="white" width='1rem' height='1rem'/>
@@ -709,7 +718,7 @@ function App() {
             <div className='flex items-center justify-between'>
               <Checkbox onCheckedChange={(checked: boolean) => {setRestartOnUpdate(checked)}} />
               <Label>
-                Restart on change
+                {langEnglish ? "Restart on change" : "Relancer d'aprés un changement"}
                 <Tooltip>
                     <TooltipTrigger>
                       <InfoIcon color="white" width='1rem' height='1rem'/>
@@ -723,7 +732,7 @@ function App() {
             <div className='flex items-center justify-between'>
               <Checkbox onCheckedChange={(checked: boolean) => {setAdvancedMode(checked); localStorage.setItem("mode", checked ? "advanced" : "normal")}} checked={advancedMode}/>
               <Label>
-                Advanced Mode
+                {langEnglish ? "Advanced Mode" : "Mode avancée"}
                 <Tooltip>
                     <TooltipTrigger>
                       <InfoIcon color="white" width='1rem' height='1rem'/>
@@ -743,21 +752,21 @@ function App() {
               onClick={() => {setIsVirusEditorOpen(true)}}
               className="bg-orange-800 border-orange-700 border hover:bg-orange-700 hover:border-orange-600"
             >
-              Open virus editor
+              {langEnglish ? "Open virus editor" : "Ouvrir l'editeur de virus"}
             </Button>
             }
             <Button 
               onClick={handleResetSettings}
               className="bg-violet-800 border-violet-700 border hover:bg-violet-700 border-violet-600"
             >
-              Reset settings
+              {langEnglish ? "Reset settings" : "NT_YET"}
             </Button>
             { simulationType !== "" &&
             <Button 
               onClick={handleReset}
               className="bg-cyan-800 border-cyan-700 border hover:bg-cyan-700 hover:border-cyan-600"
             >
-              Restart simulation
+              {langEnglish ? "Restart simulation" : "Relancer la simulation"}
             </Button>
             }
             { simulationType !== "" &&
@@ -781,24 +790,41 @@ function App() {
             </div>
 
             <div className='flex items-center justify-between'>
-              <Label className="text-[var(--infected)] pr-2">Total infected</Label>
+              <Label className="text-[var(--infected)] pr-2">
+                {langEnglish ? "Total infected" : "Total infectée"}
+              </Label>
               <span className="text-sm text-violet-300">{infectedCount}</span>
             </div>
 
             <div className='flex items-center justify-between'>
-              <Label className="text-[var(--healthy)] pr-2">Healthy</Label>
+              <Label className="text-[var(--healthy)] pr-2">
+                {langEnglish ? "Healthy" : "NT_YET"}
+              </Label>
               <span className="text-sm text-violet-300">{Math.pow(gridSizeUnchanged, dimensionsUnchanged) - infectedCount - deadCount}</span>
             </div>
 
             <div className='flex items-center justify-between'>
-              <Label className="text-[var(--dead)]">Dead</Label>
+              <Label className="text-[var(--dead)]">
+                {langEnglish ? "Dead" : "NT_YET"}
+              </Label>
               <span className="text-sm text-violet-300">{deadCount}</span>
             </div>
 
             <div className='flex items-center justify-between'>
-              <Label>Time</Label>
+              <Label>{langEnglish ? "Time" : "Temps"}</Label>
               <span className="text-sm text-violet-300">{frameCount}</span>
             </div>
+
+            <div className='mt-3'>
+              <Toggle
+                onPressedChange={setLangEnglish}
+                pressed={langEnglish}
+                className=''
+              >
+                {langEnglish ? "Français" : "English"}
+              </Toggle>
+            </div>
+
             <div className='mt-3'>
               <a href='https://github.com/Anvarys/virus-simulation' target='_blank'>
                 <div className='mt-3 bg-neutral-800 p-1 rounded-[0.5rem] border-neutral-700 border flex flex-row'>
@@ -809,6 +835,9 @@ function App() {
             </div>
             <div className='grow'>
               <p className='text-xs text-neutral-400 text-center hover:underline cursor-pointer' onClick={() => {handleSetSimulationType("")}}>About this project</p>
+              <p className='text-xs text-neutral-400 text-center'>
+                By Anvar
+              </p>
             </div>
           </div>
         </Card>
